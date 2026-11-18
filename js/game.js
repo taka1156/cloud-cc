@@ -40,6 +40,17 @@ async function init() {
   $("import-file").addEventListener("change", onImport);
   $("judge").addEventListener("click", judge);
   $("reset").addEventListener("click", () => state.set && openSet(state.set.id));
+
+  // 画面の向きが変わったら盤面を描き直す
+  let portrait = null;
+  window.addEventListener("resize", () => {
+    if (!state.tpl) return;
+    const now = $("board").parentElement.clientWidth < 600;
+    if (now !== portrait) {
+      portrait = now;
+      renderBoard();
+    }
+  });
 }
 
 /** 同梱 + 取り込み済みの問題セットを読み直す */
@@ -60,7 +71,7 @@ function openSet(id) {
   state.set = set;
   state.tpl = set ? state.templates.get(set.template) ?? null : null;
   state.placed = {};
-  $("result").replaceChildren();
+  $("result").replaceChildren(h("p", { class: "meta" }, "枠にカードを置いたら「判定する」を押してください。"));
   if (!set) {
     $("problem").replaceChildren(h("p", {}, "問題セットがありません。JSONを取り込んでください。"));
   } else {
@@ -122,41 +133,68 @@ function svgEl(tag, attrs, text) {
 
 /* ---------- 盤面 ---------- */
 
+/**
+ * 盤面の向き。縦長の画面（盤面の幅 < 600px）では、テンプレートの x と y を入れ替えて
+ * 縦向きに描く。枠の大きさはそのままなので、スマホでも全部の枠が読める大きさで収まる。
+ */
+function layout() {
+  const { width, height } = state.tpl;
+  const portrait = $("board").parentElement.clientWidth < 600;
+  // 点 (x, y) を表示座標へ。縦向きなら入れ替える
+  const pt = portrait ? (x, y) => [y, x] : (x, y) => [x, y];
+  return {
+    portrait,
+    W: portrait ? height : width,
+    H: portrait ? width : height,
+    pt,
+    // 枠の左上（枠の中心を入れ替えて、大きさは変えない）
+    slotPos: (s) => {
+      const [cx, cy] = pt(s.x + SLOT_W / 2, s.y + SLOT_H / 2);
+      return [cx - SLOT_W / 2, cy - SLOT_H / 2];
+    },
+    slotCenter: (s) => pt(s.x + SLOT_W / 2, s.y + SLOT_H / 2),
+    rect: (z) => (portrait ? { x: z.y, y: z.x, w: z.h, h: z.w } : z),
+  };
+}
+
 function renderBoard() {
   const board = $("board");
   if (!state.tpl) {
     board.replaceChildren(h("p", { class: "board-empty" }, "問題を選んでください"));
     return;
   }
-  const { width: W, height: H } = state.tpl;
+  const L = layout();
+  const { W, H } = L;
   board.style.aspectRatio = `${W} / ${H}`;
+  board.classList.toggle("portrait", L.portrait);
 
   // ゾーン（Region・AZ など）と固定の線は SVG で描く
   const svg = svgEl("svg", { class: "frame", viewBox: `0 0 ${W} ${H}` });
-  for (const z of state.tpl.zones) {
+  for (const zone of state.tpl.zones) {
+    const z = L.rect(zone);
     svg.append(
       svgEl("rect", { x: z.x, y: z.y, width: z.w, height: z.h, rx: 6, class: "zone" }),
-      svgEl("text", { x: z.x + 10, y: z.y + 22, class: "zone-label" }, z.label),
+      svgEl("text", { x: z.x + 10, y: z.y + 22, class: "zone-label" }, zone.label),
     );
   }
   for (const [a, b] of state.set.links ?? []) {
     const sa = slotOf(a);
     const sb = slotOf(b);
     if (!sa || !sb) continue;
-    svg.append(svgEl("line", {
-      x1: sa.x + SLOT_W / 2, y1: sa.y + SLOT_H / 2,
-      x2: sb.x + SLOT_W / 2, y2: sb.y + SLOT_H / 2,
-      class: "fixed-link",
-    }));
+    const [x1, y1] = L.slotCenter(sa);
+    const [x2, y2] = L.slotCenter(sb);
+    svg.append(svgEl("line", { x1, y1, x2, y2, class: "fixed-link" }));
   }
 
-  board.replaceChildren(svg, ...visibleSlots().map((s) => slotEl(s, W, H)));
+  board.replaceChildren(svg, ...visibleSlots().map((s) => slotEl(s, L)));
 }
 
-function slotEl(s, W, H) {
+function slotEl(s, L) {
+  const { W, H } = L;
+  const [x, y] = L.slotPos(s);
   const style = {
-    left: `${(s.x / W) * 100}%`,
-    top: `${(s.y / H) * 100}%`,
+    left: `${(x / W) * 100}%`,
+    top: `${(y / H) * 100}%`,
     width: `${(SLOT_W / W) * 100}%`,
     height: `${(SLOT_H / H) * 100}%`,
   };
@@ -272,11 +310,26 @@ function startDrag(e, idx, fromSlot) {
     }
     ghost.style.left = `${ev.clientX}px`;
     ghost.style.top = `${ev.clientY}px`;
+    lastY = ev.clientY;
+    if (!scrollTimer) scrollTimer = setInterval(edgeScroll, 16);
+  };
+
+  // ドラッグ中に画面の上端・下端へ寄せたらページをスクロールする（縦長の盤面で上の枠に届くように）
+  let lastY = startY;
+  let scrollTimer = null;
+  const edgeScroll = () => {
+    const edge = 70;
+    const trayTop = $("tray").getBoundingClientRect().top;
+    const bottomEdge = Math.min(window.innerHeight, trayTop + 20);
+    if (lastY < edge) window.scrollBy(0, -12);
+    else if (lastY > bottomEdge - edge && lastY < trayTop) window.scrollBy(0, 12);
   };
 
   const up = (ev) => {
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
+    window.removeEventListener("pointercancel", up);
+    clearInterval(scrollTimer);
     clearTargets();
     if (!ghost) {
       if (!fromSlot) autoPlace(idx);
@@ -295,6 +348,7 @@ function startDrag(e, idx, fromSlot) {
 
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);
+  window.addEventListener("pointercancel", up);
 }
 
 /* ---------- 判定 ---------- */

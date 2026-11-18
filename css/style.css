@@ -71,11 +71,12 @@ select, input, textarea {
   padding: 12px;
   align-items: start;
 }
+.game > * { min-width: 0; }
 .side { display: flex; flex-direction: column; gap: 12px; }
 .board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .board-head .toolbar { margin-top: 0; }
 
-/* 構成図（テンプレート） */
+/* 構成図（テンプレート）。縦長の画面では JS が縦向きに並べ替える */
 .board {
   position: relative;
   width: 100%;
@@ -257,4 +258,15 @@ fieldset label { display: block; margin: 8px 0; }
 
 @media (max-width: 900px) {
   .game, .layout { grid-template-columns: 1fr; }
+  /* 狭い画面では山札を画面下に固定し、縦長の盤面をスクロールしても手札が見えるようにする */
+  .tray {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-height: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+  }
+  .tray-card { flex: 0 0 auto; width: 84px; }
 }

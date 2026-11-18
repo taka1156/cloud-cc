@@ -48,6 +48,12 @@ export function validateTemplate(t) {
     const inside = Number.isFinite(s.x) && Number.isFinite(s.y)
       && s.x >= 0 && s.y >= 0 && s.x + SLOT_W <= t.width && s.y + SLOT_H <= t.height;
     check(inside, `slot "${s.id}" が盤面からはみ出しています`);
+    // 縦長の画面では x と y を入れ替えて描くので、入れ替えても収まること
+    const cx = s.x + SLOT_W / 2;
+    const cy = s.y + SLOT_H / 2;
+    const insidePortrait = cy - SLOT_W / 2 >= 0 && cy + SLOT_W / 2 <= t.height
+      && cx - SLOT_H / 2 >= 0 && cx + SLOT_H / 2 <= t.width;
+    check(insidePortrait, `slot "${s.id}" が縦向き表示ではみ出します（上下の端に寄せすぎ）`);
   });
   return errors;
 }
