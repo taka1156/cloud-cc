@@ -22,6 +22,12 @@
     { "id": "nat-gateway", "name": "NAT Gateway", "category": "network", "color": "#8C4FFF", "description": "プライベートからの外向き通信" },
     { "id": "iam", "name": "IAM", "category": "security", "color": "#DD344C", "description": "アクセス権限の管理" },
     { "id": "kms", "name": "KMS", "category": "security", "color": "#DD344C", "description": "暗号化鍵の管理" },
-    { "id": "cloudwatch", "name": "CloudWatch", "category": "monitoring", "color": "#E7157B", "description": "メトリクスとログの監視" }
+    { "id": "cloudwatch", "name": "CloudWatch", "category": "monitoring", "color": "#E7157B", "description": "メトリクスとログの監視" },
+    { "id": "codepipeline", "name": "CodePipeline", "category": "devops", "color": "#C925D1", "description": "リリースまでの工程を自動化" },
+    { "id": "codebuild", "name": "CodeBuild", "category": "devops", "color": "#C925D1", "description": "ビルドとテストをマネージドで実行" },
+    { "id": "cloudformation", "name": "CloudFormation", "category": "devops", "color": "#C925D1", "description": "テンプレートでインフラを構築（IaC）" },
+    { "id": "bedrock", "name": "Bedrock", "category": "ai", "color": "#01A88D", "description": "基盤モデルをAPIで利用" },
+    { "id": "sagemaker", "name": "SageMaker", "category": "ai", "color": "#01A88D", "description": "機械学習モデルの学習と配備" },
+    { "id": "rekognition", "name": "Rekognition", "category": "ai", "color": "#01A88D", "description": "画像・動画の分析" }
   ]
 }

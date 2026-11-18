@@ -2,7 +2,7 @@
 
 export const CATEGORIES = [
   "compute", "storage", "database", "network",
-  "security", "monitoring", "integration", "other",
+  "security", "monitoring", "integration", "devops", "ai", "other",
 ];
 
 /**

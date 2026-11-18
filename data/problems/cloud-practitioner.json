@@ -1,0 +1,92 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "cp-001",
+    "title": "アクセス増加に備えたWebサイト",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "スケーラビリティ"],
+    "statement": "社内の情報共有サイトを公開したところ、利用者が急増する時期がある。アクセスが増えたときだけサーバーを増やし、落ち着いたら減らしたい。",
+    "requirements": [
+      "アクセスを複数のサーバーに振り分ける",
+      "負荷に応じてサーバー台数を自動で増減させる"
+    ],
+    "deck": ["alb", "autoscaling", "ec2", "s3", "lambda", "rds"],
+    "answer": {
+      "requiredServices": ["alb", "autoscaling", "ec2"],
+      "requiredFlows": [["alb", "ec2"]]
+    },
+    "explanation": "ALB がリクエストを振り分け、Auto Scaling が EC2 の台数を負荷に応じて調整します。クラウドの「必要な分だけ使う（弾力性）」を体現する構成です。S3 や RDS は今回の要件に含まれません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "cp-002",
+    "title": "長期保存するファイルのバックアップ",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "ストレージ"],
+    "statement": "写真データを数年分保管する必要がある。めったに読み出さないが、失われては困る。保管の容量を気にせず使いたい。",
+    "requirements": [
+      "容量の上限を気にせず保存できる",
+      "耐久性の高い保管先を使う"
+    ],
+    "deck": ["s3", "efs", "rds", "dynamodb", "ec2", "sqs"],
+    "answer": {
+      "requiredServices": ["s3"],
+      "requiredFlows": []
+    },
+    "explanation": "S3 はオブジェクトストレージで、容量をほぼ無制限に使え、高い耐久性を持ちます。サーバーの管理も不要です。EFS は同時に複数サーバーから共有するためのファイルシステムで、今回の用途には向きません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "cp-003",
+    "title": "チームごとのアクセス権限",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "セキュリティ"],
+    "statement": "開発者と運用担当者で使えるクラウドの操作範囲を分けたい。誰が何をしたかを明確にし、暗号化の鍵も一元的に管理したい。",
+    "requirements": [
+      "ユーザーごとに許可する操作を決められる",
+      "暗号化の鍵を管理できる"
+    ],
+    "deck": ["iam", "kms", "waf", "cloudwatch", "ec2", "rds"],
+    "answer": {
+      "requiredServices": ["iam", "kms"],
+      "requiredFlows": []
+    },
+    "explanation": "IAM でユーザーやグループごとに許可する操作を細かく設定し、KMS で暗号化鍵を管理します。WAF はWebへの攻撃対策、CloudWatch は監視が目的なので、今回の要件には含まれません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "cp-004",
+    "title": "不正アクセスからWebアプリを守る",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "セキュリティ"],
+    "statement": "公開しているWebアプリが、悪意のある大量リクエストや特定の攻撃パターンにさらされている。アプリ本体の前段で不正なアクセスを止めたい。",
+    "requirements": [
+      "Webアプリへの攻撃パターンを遮断する",
+      "正規のリクエストはアプリに届ける"
+    ],
+    "deck": ["waf", "alb", "ec2", "route53", "rds", "kms"],
+    "answer": {
+      "requiredServices": ["waf", "alb", "ec2"],
+      "requiredFlows": [["waf", "alb"], ["alb", "ec2"]]
+    },
+    "explanation": "WAF が攻撃パターンを検査して遮断し、通過したリクエストを ALB が EC2 へ振り分けます。防御は本体より前段に置くのが基本です。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "cp-005",
+    "title": "データベースの運用を任せたい",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "データベース"],
+    "statement": "アプリケーションサーバーが使うデータベースを、自分たちでサーバーを組んで運用するのは避けたい。パッチ適用やバックアップも任せたい。",
+    "requirements": [
+      "データベースのパッチ適用やバックアップを自動化する",
+      "アプリケーションサーバーからのみ接続する"
+    ],
+    "deck": ["rds", "ec2", "dynamodb", "s3", "sqs", "cloudfront"],
+    "answer": {
+      "requiredServices": ["ec2", "rds"],
+      "requiredFlows": [["ec2", "rds"]]
+    },
+    "explanation": "RDS はデータベースのパッチ適用やバックアップをマネージドで提供するため、運用負担を減らせます。アプリケーションの EC2 から接続する構成です。"
+  }
+]

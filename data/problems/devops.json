@@ -1,0 +1,95 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "devops-001",
+    "title": "コードの変更を自動でビルドする",
+    "difficulty": 2,
+    "tags": ["DevOps", "CI/CD"],
+    "statement": "開発者がコードをリポジトリに反映したら、ビルドとテストを自動で行いたい。手作業でのデプロイはやめ、変更をすぐに本番へ届けられるようにしたい。",
+    "requirements": [
+      "変更を検知して工程を自動で進める",
+      "ビルドとテストを自動で実行する",
+      "成果物を本番環境へデプロイする"
+    ],
+    "deck": ["codepipeline", "codebuild", "ecs", "s3", "lambda", "cloudformation"],
+    "answer": {
+      "requiredServices": ["codepipeline", "codebuild", "ecs"],
+      "requiredFlows": [["codepipeline", "codebuild"], ["codebuild", "ecs"]]
+    },
+    "explanation": "CodePipeline が工程全体を管理し、CodeBuild がビルドとテストを実行します。成果物は ECS にデプロイします。CloudFormation はインフラ構築には有効ですが、この問題の中心ではありません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "devops-002",
+    "title": "同じ環境を何度でも作り直す",
+    "difficulty": 1,
+    "tags": ["DevOps", "IaC"],
+    "statement": "開発環境と本番環境の構成が少しずつずれてしまい、トラブルの原因になっている。構成をコードとして管理し、同じ環境を繰り返し作れるようにしたい。",
+    "requirements": [
+      "インフラ構成をテンプレートとして保存する",
+      "テンプレートから環境を自動で作成する"
+    ],
+    "deck": ["cloudformation", "ec2", "s3", "codebuild", "rds", "sns"],
+    "answer": {
+      "requiredServices": ["cloudformation", "ec2"],
+      "requiredFlows": [["cloudformation", "ec2"]]
+    },
+    "explanation": "CloudFormation はテンプレートに書いた構成を読み込み、EC2 などのリソースを自動で作成します。同じテンプレートを使えば、環境の差異を減らせます。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "devops-003",
+    "title": "異常を検知して担当者に通知する",
+    "difficulty": 2,
+    "tags": ["DevOps", "監視"],
+    "statement": "サーバーのCPU使用率が急上昇しても気づくのが遅れている。異常を検知したら、担当者へすぐに通知したい。",
+    "requirements": [
+      "サーバーのメトリクスを監視する",
+      "しきい値を超えたら通知を送る"
+    ],
+    "deck": ["cloudwatch", "sns", "ec2", "sqs", "eventbridge", "s3"],
+    "answer": {
+      "requiredServices": ["ec2", "cloudwatch", "sns"],
+      "requiredFlows": [["ec2", "cloudwatch"], ["cloudwatch", "sns"]]
+    },
+    "explanation": "CloudWatch が EC2 のメトリクスを収集し、アラームがしきい値を超えると SNS で通知を送ります。監視の対象から通知までの流れを押さえた構成です。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "devops-004",
+    "title": "障害の通知をきっかけに自動で復旧する",
+    "difficulty": 3,
+    "tags": ["DevOps", "自動化", "イベント駆動"],
+    "statement": "サーバーの障害が起きたら、人が対応する前に自動で再起動や復旧処理を行いたい。障害の発生を起点に処理を実行する仕組みを作りたい。",
+    "requirements": [
+      "障害イベントを検知してルーティングする",
+      "イベントを受けて復旧処理を実行する",
+      "復旧対象のサーバーに対して操作する"
+    ],
+    "deck": ["eventbridge", "lambda", "ec2", "cloudwatch", "sns", "rds", "s3"],
+    "answer": {
+      "requiredServices": ["eventbridge", "lambda", "ec2"],
+      "requiredFlows": [["eventbridge", "lambda"], ["lambda", "ec2"]]
+    },
+    "explanation": "EventBridge が障害イベントを受け取り、Lambda を起動します。Lambda は EC2 に対して再起動などの復旧操作を行います。CloudWatch は障害を検知する役割ですが、この問題では EventBridge がイベントの起点になっています。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "devops-005",
+    "title": "停止させずに新バージョンへ切り替える",
+    "difficulty": 3,
+    "tags": ["DevOps", "デプロイ", "無停止"],
+    "statement": "本番のWebアプリを更新するたびにサービスが止まってしまう。新しいバージョンを別に用意し、動作確認後に利用者の向き先を切り替えたい。",
+    "requirements": [
+      "新バージョンを本番と並べて用意する",
+      "切り替えはロードバランサーの向き先変更で行う",
+      "デプロイは自動化する"
+    ],
+    "deck": ["codepipeline", "codebuild", "ecs", "alb", "route53", "rds", "s3"],
+    "answer": {
+      "requiredServices": ["codepipeline", "ecs", "alb"],
+      "requiredFlows": [["codepipeline", "ecs"], ["alb", "ecs"]]
+    },
+    "explanation": "CodePipeline が新バージョンをECSにデプロイし、ALB の向き先を新しいタスクに切り替えることで無停止の更新を実現します。CodeBuild はビルドを担当しますが、切り替えの中心は CodePipeline と ALB です。"
+  }
+]

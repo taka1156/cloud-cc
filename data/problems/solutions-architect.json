@@ -1,0 +1,95 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "sa-001",
+    "title": "動的サイトと静的ファイルを分けて配信",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "CDN", "配信"],
+    "statement": "ECサイトの商品画像や静的ファイルは世界中から読まれる一方、注文処理はアプリケーションサーバーで行う。両方を遅延少なく、安全に配信したい。",
+    "requirements": [
+      "静的ファイルはエッジでキャッシュする",
+      "動的なリクエストはアプリケーションサーバーへ届ける",
+      "不正なリクエストを前段で遮断する"
+    ],
+    "deck": ["cloudfront", "alb", "ec2", "s3", "waf", "rds", "lambda"],
+    "answer": {
+      "requiredServices": ["cloudfront", "alb", "ec2", "s3"],
+      "requiredFlows": [["cloudfront", "alb"], ["alb", "ec2"], ["cloudfront", "s3"]]
+    },
+    "explanation": "CloudFront を入口にし、動的リクエストは ALB 経由で EC2 へ、静的ファイルはオリジンの S3 から取得します。WAF は要件に含めれば加点対象になりますが、この問題の正解には必須ではありません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "sa-002",
+    "title": "注文を取りこぼさない非同期処理",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "非同期", "疎結合"],
+    "statement": "セール時に注文が一気に集中し、処理が追いつかず失敗することがある。注文の受付と実際の処理を切り離し、失敗しても注文を失わないようにしたい。",
+    "requirements": [
+      "受け付けた注文をキューに溜める",
+      "処理は注文を読み取ったサーバーレス関数で行う",
+      "結果はDynamoDBに保存する"
+    ],
+    "deck": ["sqs", "lambda", "dynamodb", "sns", "ec2", "s3"],
+    "answer": {
+      "requiredServices": ["sqs", "lambda", "dynamodb"],
+      "requiredFlows": [["sqs", "lambda"], ["lambda", "dynamodb"]]
+    },
+    "explanation": "SQS に注文を溜めることで受付と処理を疎結合にし、負荷のピークを吸収します。Lambda がキューから取り出して処理し、結果を DynamoDB に保存します。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "sa-003",
+    "title": "コンテナで動くWebアプリの基盤",
+    "difficulty": 3,
+    "tags": ["ソリューションアーキテクト", "コンテナ", "共有ストレージ"],
+    "statement": "社内のWebアプリをコンテナ化して運用したい。複数のコンテナ間で共有するファイルがあり、データベースは別に持ちたい。ネットワーク境界も意識したい。",
+    "requirements": [
+      "コンテナを複数の拠点（AZ）に分散して動かす",
+      "コンテナから共有ファイルを読み書きできる",
+      "データはマネージドのデータベースに保存する"
+    ],
+    "deck": ["alb", "ecs", "efs", "rds", "nat-gateway", "kms", "cloudwatch", "s3"],
+    "answer": {
+      "requiredServices": ["alb", "ecs", "efs", "rds"],
+      "requiredFlows": [["alb", "ecs"], ["ecs", "efs"], ["ecs", "rds"]]
+    },
+    "explanation": "ALB が振り分け、ECS がコンテナを複数 AZ で実行します。複数コンテナで共有するファイルは EFS、データは RDS に置きます。NAT Gateway や KMS は改善策として有効ですが、今回の必須要件ではありません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "sa-004",
+    "title": "非公開のサーバーから外部APIを呼ぶ",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "ネットワーク"],
+    "statement": "業務データを扱うサーバーはインターネットから直接アクセスされないよう非公開のネットワークに置く。ただし、外部の決済APIへは通信が必要。",
+    "requirements": [
+      "サーバーにはインターネットから直接届かない",
+      "サーバーから外部へ送信のみできる"
+    ],
+    "deck": ["nat-gateway", "ec2", "route53", "cloudfront", "iam", "s3"],
+    "answer": {
+      "requiredServices": ["nat-gateway", "ec2"],
+      "requiredFlows": [["ec2", "nat-gateway"]]
+    },
+    "explanation": "プライベートサブネットの EC2 は、NAT Gateway を経由して外部へ送信します。外部からの直接の受信は受け付けないため、要件を満たせます。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "sa-005",
+    "title": "保存データを暗号化して管理",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "暗号化", "コンプライアンス"],
+    "statement": "個人情報を含むデータをデータベースとファイルストレージに保存する。監査で暗号化と鍵の管理方法を説明できるようにしたい。",
+    "requirements": [
+      "保存データを暗号化する",
+      "鍵の利用権限を制御し、履歴を追えるようにする"
+    ],
+    "deck": ["kms", "rds", "s3", "iam", "cloudwatch", "lambda"],
+    "answer": {
+      "requiredServices": ["kms", "rds", "s3", "iam"],
+      "requiredFlows": []
+    },
+    "explanation": "KMS で暗号化鍵を一元管理し、RDS と S3 の保存データをその鍵で暗号化します。IAM で鍵を使える主体を制限します。CloudWatch は監視用なので、この問題の必須要素ではありません。"
+  }
+]

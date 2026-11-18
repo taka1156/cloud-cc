@@ -1,0 +1,92 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "aip-001",
+    "title": "社内向けチャットボットを作る",
+    "difficulty": 1,
+    "tags": ["AIプラクティショナー", "生成AI"],
+    "statement": "社員からの質問に答える社内チャットボットを作りたい。自前でAIモデルを学習させる時間はなく、既存の基盤モデルを使いたい。",
+    "requirements": [
+      "基盤モデルを API 経由で利用する",
+      "社内のフロントエンドから API を呼び出せる"
+    ],
+    "deck": ["bedrock", "api-gateway", "lambda", "sagemaker", "s3", "rds"],
+    "answer": {
+      "requiredServices": ["api-gateway", "lambda", "bedrock"],
+      "requiredFlows": [["api-gateway", "lambda"], ["lambda", "bedrock"]]
+    },
+    "explanation": "API Gateway で受けたリクエストを Lambda が処理し、Bedrock の基盤モデルに問い合わせます。モデルを自前で学習させる必要がないため、SageMaker は今回不要です。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "aip-002",
+    "title": "投稿画像の不適切チェック",
+    "difficulty": 1,
+    "tags": ["AIプラクティショナー", "画像分析"],
+    "statement": "ユーザーが投稿する画像を公開前に自動チェックしたい。不適切な画像は人の確認に回せるようにしたい。",
+    "requirements": [
+      "アップロードされた画像を自動で分析する",
+      "分析結果に応じて処理を分ける"
+    ],
+    "deck": ["s3", "rekognition", "lambda", "sns", "dynamodb", "ec2"],
+    "answer": {
+      "requiredServices": ["s3", "lambda", "rekognition"],
+      "requiredFlows": [["s3", "lambda"], ["lambda", "rekognition"]]
+    },
+    "explanation": "画像が S3 にアップロードされると Lambda が起動し、Rekognition で画像を分析します。学習済みのAIサービスを使うため、自前でモデルを作る必要はありません。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "aip-003",
+    "title": "社内文書をもとに回答する",
+    "difficulty": 2,
+    "tags": ["AIプラクティショナー", "生成AI", "RAG"],
+    "statement": "社内規程の文書をもとに、社員の質問へ回答する仕組みを作りたい。回答には根拠となった文書を示せるようにしたい。",
+    "requirements": [
+      "社内文書は S3 に保管する",
+      "回答は基盤モデルで生成する"
+    ],
+    "deck": ["s3", "bedrock", "sagemaker", "dynamodb", "cloudfront", "sqs"],
+    "answer": {
+      "requiredServices": ["s3", "bedrock"],
+      "requiredFlows": [["s3", "bedrock"]]
+    },
+    "explanation": "社内文書を S3 に置き、その内容を検索して参照情報として基盤モデルに渡すことで、根拠を示した回答を生成します（RAG）。実際には検索用の仕組みも追加しますが、この問題の範囲では S3 と Bedrock が中心です。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "aip-004",
+    "title": "独自の予測モデルを学習させる",
+    "difficulty": 2,
+    "tags": ["AIプラクティショナー", "機械学習"],
+    "statement": "過去の売上データから来月の需要を予測するモデルを作りたい。データは既に S3 にあり、学習と配備までまとめて行いたい。",
+    "requirements": [
+      "過去データを学習に使う",
+      "学習したモデルを配備して予測に使う"
+    ],
+    "deck": ["sagemaker", "s3", "bedrock", "rekognition", "rds", "lambda"],
+    "answer": {
+      "requiredServices": ["s3", "sagemaker"],
+      "requiredFlows": [["s3", "sagemaker"]]
+    },
+    "explanation": "S3 にある学習データを SageMaker が読み込み、モデルを学習・配備します。既存の基盤モデルではなく、目的に合わせたモデルを作る場面です。"
+  },
+  {
+    "schemaVersion": 1,
+    "id": "aip-005",
+    "title": "生成AIを安全に運用する",
+    "difficulty": 2,
+    "tags": ["AIプラクティショナー", "責任あるAI", "運用"],
+    "statement": "生成AIを業務に組み込むにあたり、誰がどの機能を使えるかを制限し、利用状況を監視したい。不適切な利用や異常な利用量を早く把握したい。",
+    "requirements": [
+      "AIを呼び出せる主体を限定する",
+      "利用状況を監視し、異常を通知する"
+    ],
+    "deck": ["bedrock", "iam", "cloudwatch", "sns", "kms", "rekognition"],
+    "answer": {
+      "requiredServices": ["bedrock", "iam", "cloudwatch"],
+      "requiredFlows": []
+    },
+    "explanation": "IAM で Bedrock を呼び出せる主体を制限し、CloudWatch で利用量や異常を監視します。アクセス制御と監視の組み合わせが、責任ある運用の基本です。"
+  }
+]
