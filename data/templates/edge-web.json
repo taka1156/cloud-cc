@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "edge-web",
+  "name": "静的サイト配信",
+  "description": "インターネットから静的ファイルを届ける構成",
+  "width": 960,
+  "height": 520,
+  "zones": [
+    { "label": "AWS Cloud", "x": 20, "y": 20, "w": 920, "h": 480 }
+  ],
+  "slots": [
+    { "id": "dns", "kind": "edge", "label": "DNS", "x": 80, "y": 220 },
+    { "id": "waf", "kind": "edge", "label": "防御", "x": 320, "y": 220 },
+    { "id": "cdn", "kind": "edge", "label": "配信", "x": 560, "y": 220 },
+    { "id": "storage", "kind": "storage", "label": "ファイル保存先", "x": 800, "y": 220 }
+  ]
+}

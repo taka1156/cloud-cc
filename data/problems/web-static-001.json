@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "web-static-001",
   "title": "静的サイトを世界中に配信",
   "difficulty": 1,
@@ -7,15 +7,14 @@
   "statement": "個人ブログの静的ファイル（HTML・CSS・画像）を、世界中のユーザーに低遅延で届けたい。独自ドメインでアクセスできるようにしたい。サーバーの運用はしたくない。",
   "requirements": [
     "独自ドメインでアクセスできる",
-    "ファイルの保存先はサーバーレスに近い構成にする"
+    "エッジでキャッシュして配信する",
+    "ファイルはサーバーを使わずに保存する"
   ],
-  "deck": ["route53", "cloudfront", "s3", "ec2", "rds", "lambda", "dynamodb", "sqs"],
+  "template": "edge-web",
+  "deck": ["route53", "cloudfront", "s3", "ec2", "rds", "sqs"],
   "answer": {
-    "requiredServices": ["route53", "cloudfront", "s3"],
-    "requiredFlows": [
-      ["route53", "cloudfront"],
-      ["cloudfront", "s3"]
-    ]
+    "slots": { "dns": "route53", "cdn": "cloudfront", "storage": "s3" }
   },
-  "explanation": "Route 53 で独自ドメインを CloudFront に向け、CloudFront がキャッシュしながら S3 からファイルを取得します。サーバーを立てる必要がないため、EC2 や RDS は不要です。"
+  "links": [["dns", "cdn"], ["cdn", "storage"]],
+  "explanation": "Route 53 で独自ドメインを CloudFront に向け、CloudFront がキャッシュしながら S3 からファイルを取得します。サーバーを立てる必要がないため、EC2 や RDS は使いません（そもそもこの盤面には置ける枠がありません）。"
 }

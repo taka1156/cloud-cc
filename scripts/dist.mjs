@@ -18,6 +18,7 @@ const PUBLIC_PATHS = [
   "editor",
   "assets",
   "data/services.json",
+  "data/templates",
   "data/problems",
 ];
 

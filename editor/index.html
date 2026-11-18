@@ -44,20 +44,26 @@
         <label>要件（1行に1つ） <textarea id="f-requirements" rows="4"></textarea></label>
         <label>解説 <textarea id="f-explanation" rows="5"></textarea></label>
 
-        <h3>山札（プレイヤーに渡すカード）</h3>
-        <div id="deck-grid" class="chk-grid"></div>
+        <h3>構成図テンプレート</h3>
+        <select id="f-template"></select>
+        <p id="template-desc" class="meta"></p>
 
-        <h3>正解の必須サービス（チェックすると山札にも追加）</h3>
-        <div id="req-grid" class="chk-grid"></div>
+        <h3>山札（プレイヤーに渡すカードと枚数）</h3>
+        <p class="meta">正解のカードに加えて、紛らわしいカードを混ぜると問題らしくなります。</p>
+        <div id="deck-grid" class="qty-grid"></div>
 
-        <h3>正解の線（向きなし。どちら向きに選んでも同じ）</h3>
+        <h3>正解（枠ごとに置くカード）</h3>
+        <p class="meta">プルダウンには、山札にあり、かつその枠に置けるカードだけが出ます。ゲームの盤面には、ここで正解を決めた枠だけが表示されます。</p>
+        <div id="answer-grid" class="slot-rows"></div>
+
+        <h3>構成図に描く線（正解で使う枠どうし・向きなし）</h3>
         <div class="row">
-          <select id="flow-from"></select>
+          <select id="link-from"></select>
           <span>――</span>
-          <select id="flow-to"></select>
-          <button id="flow-add" type="button">追加</button>
+          <select id="link-to"></select>
+          <button id="link-add" type="button">追加</button>
         </div>
-        <ul id="flow-list"></ul>
+        <ul id="link-list"></ul>
       </fieldset>
 
       <section>
@@ -73,7 +79,7 @@
       <section>
         <h3>JSONを貼り付けて反映</h3>
         <p class="meta">AIが作ったJSONを貼ると、選択中の問題を置き換えます（未選択なら新規追加）。</p>
-        <textarea id="paste" rows="6" placeholder="{ &quot;id&quot;: &quot;...&quot;, ... }"></textarea>
+        <textarea id="paste" rows="6" placeholder="{ &quot;schemaVersion&quot;: 2, &quot;id&quot;: &quot;...&quot;, ... }"></textarea>
         <p><button id="btn-paste" type="button">反映する</button></p>
       </section>
     </main>

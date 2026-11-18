@@ -21,7 +21,7 @@
     <div class="side">
       <section class="panel" id="problem"></section>
       <section class="panel">
-        <div id="result"></div>
+        <div id="result"><p class="meta">枠にカードを置いたら「判定する」を押してください。</p></div>
       </section>
     </div>
 
@@ -29,20 +29,18 @@
       <div class="board-head">
         <h2>構成図</h2>
         <div class="toolbar">
-          <span id="link-count" class="meta"></span>
-          <button id="delete-link" type="button" disabled>選んだ線を削除</button>
+          <span id="remaining" class="meta"></span>
           <button id="judge" class="primary" type="button">判定する</button>
           <button id="reset" type="button">リセット</button>
         </div>
       </div>
       <p class="meta">
-        山札のカードを盤面にドラッグ（クリックでも追加）。カードの右の○を別のカードまでドラッグすると線がつながります。線は向きがないので、どちら向きに引いても同じです。線を選んで Delete で削除できます。
+        山札のカードを構成図の枠へドラッグします（クリックすると置ける空き枠に入ります）。
+        カードごとに置ける枠が決まっていて、ドラッグ中は置けない枠が暗くなります。
+        置いたカードはドラッグで別の枠へ移動でき、山札へ戻すと外れます。
       </p>
 
-      <div id="board" class="board">
-        <p id="board-empty" class="board-empty">下の山札からカードをドラッグしてください</p>
-      </div>
-
+      <div id="board" class="board"></div>
       <div id="tray" class="tray"></div>
     </section>
   </main>

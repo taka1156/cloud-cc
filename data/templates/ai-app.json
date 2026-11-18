@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "ai-app",
+  "name": "AIアプリ",
+  "description": "入口・処理・AIモデル・データを組み合わせた構成",
+  "width": 960,
+  "height": 520,
+  "zones": [
+    { "label": "AI application", "x": 20, "y": 20, "w": 920, "h": 480 }
+  ],
+  "slots": [
+    { "id": "api", "kind": "api", "label": "API入口", "x": 80, "y": 220 },
+    { "id": "fn", "kind": "compute", "label": "処理", "x": 320, "y": 220 },
+    { "id": "model", "kind": "ai", "label": "AIモデル", "x": 560, "y": 220 },
+    { "id": "kb", "kind": "storage", "label": "データ", "x": 80, "y": 380 },
+    { "id": "sec", "kind": "security", "label": "権限", "x": 320, "y": 380 },
+    { "id": "mon", "kind": "ops", "label": "監視", "x": 560, "y": 380 }
+  ]
+}

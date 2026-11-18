@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "serverless-api-003",
   "title": "サーバーレスのAPI",
   "difficulty": 2,
@@ -8,15 +8,13 @@
   "requirements": [
     "REST APIとして公開する",
     "サーバーを管理しない",
-    "注文データを保存する"
+    "注文データをキーで素早く読み書きする"
   ],
-  "deck": ["api-gateway", "lambda", "dynamodb", "cloudwatch", "ec2", "rds", "sqs", "s3"],
+  "template": "serverless",
+  "deck": ["api-gateway", "lambda", "dynamodb", "cloudwatch", "ec2", "rds", "sqs"],
   "answer": {
-    "requiredServices": ["api-gateway", "lambda", "dynamodb"],
-    "requiredFlows": [
-      ["api-gateway", "lambda"],
-      ["lambda", "dynamodb"]
-    ]
+    "slots": { "api": "api-gateway", "fn": "lambda", "data": "dynamodb" }
   },
-  "explanation": "API Gateway でリクエストを受け、Lambda で処理し、DynamoDB に保存します。リクエストごとに課金されサーバー管理も不要なため、EC2 や RDS は選ばない構成になります。監視用の CloudWatch は推奨ですが、必須ではありません。"
+  "links": [["api", "fn"], ["fn", "data"]],
+  "explanation": "API Gateway でリクエストを受け、Lambda で処理し、DynamoDB に保存します。リクエストごとの課金でサーバー管理も不要です。RDS もデータの枠に置けますが、キーで素早く読み書きする用途には DynamoDB が向いています。EC2 は「処理」の枠に置けますが、サーバー管理が必要になるため不正解です。"
 }

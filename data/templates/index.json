@@ -1,0 +1,9 @@
+{
+  "files": [
+    "ai-app.json",
+    "edge-web.json",
+    "pipeline.json",
+    "serverless.json",
+    "three-tier.json"
+  ]
+}

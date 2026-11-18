@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "pipeline",
+  "name": "デプロイパイプライン",
+  "description": "ビルドからデプロイ、監視までの流れ",
+  "width": 960,
+  "height": 520,
+  "zones": [
+    { "label": "Deploy pipeline", "x": 20, "y": 20, "w": 920, "h": 480 }
+  ],
+  "slots": [
+    { "id": "pipe", "kind": "devops", "label": "パイプライン", "x": 60, "y": 220 },
+    { "id": "build", "kind": "devops", "label": "ビルド", "x": 300, "y": 220 },
+    { "id": "target", "kind": "compute", "label": "デプロイ先", "x": 540, "y": 220 },
+    { "id": "artifact", "kind": "storage", "label": "成果物", "x": 60, "y": 380 },
+    { "id": "iac", "kind": "devops", "label": "インフラ定義", "x": 300, "y": 380 },
+    { "id": "monitor", "kind": "ops", "label": "監視", "x": 540, "y": 380 }
+  ]
+}

@@ -2,22 +2,31 @@
 
 const STORE_KEY = "cloud-cc:imported-sets";
 
-/** サービスマスター（固定値）を読み込む */
-export async function loadServices(base = "") {
-  const res = await fetch(`${base}data/services.json`);
-  if (!res.ok) throw new Error(`services.json の読込に失敗 (${res.status})`);
-  return (await res.json()).services;
+async function getJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url} の読込に失敗 (${res.status})`);
+  return res.json();
 }
 
-/** リポジトリ同梱の問題セットを読み込む（data/problems/index.json 経由） */
+/** サービスマスター（固定値） */
+export async function loadServices(base = "") {
+  return (await getJson(`${base}data/services.json`)).services;
+}
+
+/** 盤面テンプレート。Map<id, template> で返す */
+export async function loadTemplates(base = "") {
+  const { files } = await getJson(`${base}data/templates/index.json`);
+  const list = await Promise.all(files.map((f) => getJson(`${base}data/templates/${f}`)));
+  return new Map(list.map((t) => [t.id, t]));
+}
+
+/** リポジトリ同梱の問題セット（data/problems/index.json 経由） */
 export async function loadBundledSets(base = "") {
-  const res = await fetch(`${base}data/problems/index.json`);
-  if (!res.ok) throw new Error(`問題一覧 index.json の読込に失敗 (${res.status})`);
-  const { files } = await res.json();
-  const lists = await Promise.all(files.map(async (file) => {
-    const r = await fetch(`${base}data/problems/${file}`);
-    if (!r.ok) throw new Error(`${file} の読込に失敗 (${r.status})`);
-    return parseProblemFile(await r.text());
+  const { files } = await getJson(`${base}data/problems/index.json`);
+  const lists = await Promise.all(files.map(async (f) => {
+    const res = await fetch(`${base}data/problems/${f}`);
+    if (!res.ok) throw new Error(`${f} の読込に失敗 (${res.status})`);
+    return parseProblemFile(await res.text());
   }));
   return lists.flat();
 }

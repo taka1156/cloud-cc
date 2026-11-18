@@ -6,6 +6,7 @@
   --accent: #ff9900;
   --ok: #2e7d32;
   --ng: #c62828;
+  --zone: #1f9ea6;
 }
 
 * { box-sizing: border-box; }
@@ -71,18 +72,20 @@ select, input, textarea {
   align-items: start;
 }
 .side { display: flex; flex-direction: column; gap: 12px; }
-.board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.board-head .toolbar { margin-top: 0; }
 
+/* 構成図（テンプレート） */
 .board {
   position: relative;
-  height: 460px;
-  border: 1px dashed #b8c0cc;
-  border-radius: 8px;
-  background-color: #fbfcfd;
-  background-image: radial-gradient(#d9dee6 1px, transparent 1px);
-  background-size: 20px 20px;
+  width: 100%;
+  max-width: 980px;
+  aspect-ratio: 960 / 520;
+  margin: 8px auto 0;
+  border-radius: 10px;
+  background: #232a34;
   overflow: hidden;
-  touch-action: none;
+  user-select: none;
 }
 .board-empty {
   position: absolute;
@@ -90,73 +93,55 @@ select, input, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted);
-  pointer-events: none;
+  color: #aab3c0;
   margin: 0;
 }
-.board-empty[hidden] { display: none; }
+.frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.frame .zone { fill: rgba(31, 158, 166, 0.06); stroke: var(--zone); stroke-width: 2; stroke-dasharray: 8 6; }
+.frame .zone-label { fill: var(--zone); font-size: 16px; font-weight: 600; }
+.frame .fixed-link { stroke: #d6dbe3; stroke-width: 3; stroke-linecap: round; }
 
-/* 線（向きなし） */
-.links { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.links .link { stroke: #5b6575; stroke-width: 3; stroke-linecap: round; }
-.links .link.selected { stroke: var(--accent); stroke-width: 5; }
-.links .link.temp { stroke: #3b48cc; stroke-width: 2; stroke-dasharray: 6 6; }
-.links .hit { stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
-
-/* 盤面のカード */
-.node {
+/* 枠 */
+.slot {
   position: absolute;
-  width: 120px;
-  height: 88px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-top: 5px solid #999;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  cursor: grab;
-  user-select: none;
-  touch-action: none;
-}
-.node.source { outline: 3px solid #3b48cc; }
-.node-label { font-size: 12px; font-weight: 600; text-align: center; }
-.node .remove {
-  position: absolute;
-  top: 2px;
-  right: 4px;
-  padding: 0 6px;
-  line-height: 1.3;
+  gap: 3px;
+  text-align: center;
+  padding: 4px;
   font-size: 12px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
+  transition: opacity 0.12s, outline-color 0.12s;
 }
-/* 接続の端子。ここをドラッグして線を引く */
-.node .port {
-  position: absolute;
-  right: -9px;
-  top: 50%;
-  width: 16px;
-  height: 16px;
-  margin-top: -8px;
-  border-radius: 50%;
+.slot > * { pointer-events: none; }
+.slot.empty {
+  border: 2px dashed #7d8796;
+  background: #2c3440;
+  color: #d4d9e1;
+}
+.slot.empty .slot-label { font-weight: 700; }
+.slot.empty .slot-kind { font-size: 11px; color: #9aa5b4; }
+.slot.filled {
+  border: 1px solid #c9ced6;
+  border-top: 5px solid #999;
   background: #fff;
-  border: 2px solid #3b48cc;
-  cursor: crosshair;
+  color: var(--fg);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  cursor: grab;
   touch-action: none;
 }
-.node .port:hover { background: #dfe3ff; }
+.slot .card-name { font-weight: 700; }
+.slot.ok { outline: 3px solid #4caf50; outline-offset: 2px; }
+.slot.ng { opacity: 0.3; }
 
 /* アイコン（assets/aws/<id>.svg）。無ければバッジで代替 */
-.icon { display: block; width: 40px; height: 40px; pointer-events: none; }
-.icon img { width: 40px; height: 40px; display: block; pointer-events: none; }
+.icon { display: block; width: 36px; height: 36px; pointer-events: none; }
+.icon img { width: 36px; height: 36px; display: block; pointer-events: none; }
 .badge {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   color: #fff;
   display: flex;
@@ -170,50 +155,55 @@ select, input, textarea {
 /* 山札 */
 .tray {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  padding: 10px 2px 4px;
-  margin-top: 10px;
+  min-height: 96px;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 10px;
+  background: #eef1f5;
 }
 .tray-card {
-  flex: 0 0 auto;
   width: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px;
+  padding: 8px 6px;
   border: 1px solid var(--line);
+  border-top: 5px solid #999;
   border-radius: 8px;
   background: #fff;
   cursor: grab;
   touch-action: none;
   user-select: none;
   font-size: 12px;
+  font-weight: 600;
   text-align: center;
 }
+.tray-card:hover { box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12); }
 .tray-card * { pointer-events: none; }
-.tray-card.used { opacity: 0.35; cursor: default; }
 
 /* ドラッグ中のゴースト */
 .ghost {
   position: fixed;
   pointer-events: none;
   transform: translate(-50%, -50%);
-  opacity: 0.9;
   background: #fff;
+  border-top: 5px solid #999;
   border-radius: 10px;
   padding: 6px 10px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   font-size: 12px;
+  font-weight: 600;
   z-index: 10;
 }
 
-.verdict { padding: 10px; border-radius: 8px; font-weight: 700; margin: 8px 0; }
+.verdict { padding: 10px; border-radius: 8px; font-weight: 700; margin: 0 0 8px; }
 .verdict.pass { background: #e8f5e9; color: var(--ok); }
 .verdict.fail { background: #ffebee; color: var(--ng); }
 
@@ -256,9 +246,12 @@ aside h2 { margin-top: 0; font-size: 16px; }
 fieldset label { display: block; margin: 8px 0; }
 .row { display: flex; gap: 8px; align-items: center; }
 .row label { flex: 1; margin: 0; }
-.chk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 10px; }
-.chk { display: flex; align-items: center; gap: 4px; font-size: 14px; margin: 0; }
-.chk input { width: auto; }
+.qty-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 12px; }
+.qty { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 0; }
+.qty input { width: 56px; padding: 2px 4px; }
+.qty small { color: var(--muted); }
+.slot-rows { display: grid; gap: 6px; }
+.slot-row .slot-name { flex: 0 0 220px; font-size: 14px; }
 #preview { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
 #toast { min-height: 1em; }
 
