@@ -1,5 +1,5 @@
 import { loadServices, loadBundledSets, parseProblemFile, download, h } from "../js/data.js";
-import { validateProblemSet } from "../js/schema.js";
+import { validateProblemSet, linkKey } from "../js/schema.js";
 
 const $ = (id) => document.getElementById(id);
 const state = { services: [], sets: [], index: -1 };
@@ -137,7 +137,7 @@ function renderFlows() {
   $("flow-from").replaceChildren(...opts());
   $("flow-to").replaceChildren(...opts());
   $("flow-list").replaceChildren(...(set?.answer.requiredFlows ?? []).map(([a, b], i) => h("li", {},
-    `${nameOf(a)} → ${nameOf(b)} `,
+    `${nameOf(a)} ―― ${nameOf(b)} `,
     h("button", {
       type: "button",
       onclick: () => { cur().answer.requiredFlows.splice(i, 1); commit(); },
@@ -244,7 +244,8 @@ async function init() {
     const a = $("flow-from").value;
     const b = $("flow-to").value;
     if (!a || !b || a === b) return toast("接続元と接続先を別々に選んでください");
-    if (!set.answer.requiredFlows.some(([x, y]) => x === a && y === b)) {
+    // 線は向きなし。[A,B] と [B,A] は同じ線として扱う
+    if (!set.answer.requiredFlows.some(([x, y]) => linkKey(x, y) === linkKey(a, b))) {
       set.answer.requiredFlows.push([a, b]);
     }
     commit();

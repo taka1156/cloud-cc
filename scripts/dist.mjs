@@ -16,6 +16,7 @@ const PUBLIC_PATHS = [
   "css",
   "js",
   "editor",
+  "assets",
   "data/services.json",
   "data/problems",
 ];

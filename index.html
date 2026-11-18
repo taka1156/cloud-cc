@@ -18,25 +18,32 @@
   </header>
 
   <main class="game">
-    <section class="panel" id="problem"></section>
+    <div class="side">
+      <section class="panel" id="problem"></section>
+      <section class="panel">
+        <div id="result"></div>
+      </section>
+    </div>
 
     <section class="panel">
-      <h2>山札</h2>
-      <p class="meta">カードをクリックして「使う」カードを選ぶ</p>
-      <div id="deck" class="grid"></div>
-    </section>
-
-    <section class="panel">
-      <h2>構成</h2>
-      <div id="build" class="grid"></div>
-      <h3>接続</h3>
-      <p id="connect-hint" class="meta"></p>
-      <ul id="flows"></ul>
-      <div class="actions">
-        <button id="judge" class="primary" type="button">判定する</button>
-        <button id="reset" type="button">リセット</button>
+      <div class="board-head">
+        <h2>構成図</h2>
+        <div class="toolbar">
+          <span id="link-count" class="meta"></span>
+          <button id="delete-link" type="button" disabled>選んだ線を削除</button>
+          <button id="judge" class="primary" type="button">判定する</button>
+          <button id="reset" type="button">リセット</button>
+        </div>
       </div>
-      <div id="result"></div>
+      <p class="meta">
+        山札のカードを盤面にドラッグ（クリックでも追加）。カードの右の○を別のカードまでドラッグすると線がつながります。線は向きがないので、どちら向きに引いても同じです。線を選んで Delete で削除できます。
+      </p>
+
+      <div id="board" class="board">
+        <p id="board-empty" class="board-empty">下の山札からカードをドラッグしてください</p>
+      </div>
+
+      <div id="tray" class="tray"></div>
     </section>
   </main>
 

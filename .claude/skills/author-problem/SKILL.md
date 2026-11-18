@@ -40,7 +40,7 @@ description: cloud-cc の AWS構成ゲームの問題セット（問題文・山
 - `difficulty` は 1（サービス2〜3個の入門）、2（4〜5個の標準）、3（6個以上や冗長化・セキュリティ要件を含む応用）の目安で決める。
 - `deck` は正解に必要なサービスに、ダミーを 2〜4 枚加えて作る。ダミーは「要件に合わないが一見使えそう」なものにすると良い。
 - `answer.requiredServices` はすべて `deck` に含める。
-- `answer.requiredFlows` は `requiredServices` 内の、異なる2つのIDの組だけで作る。方向は通信・データの流れ（元 → 先）。
+- `answer.requiredFlows` は `requiredServices` 内の、異なる2つのIDの組だけで作る。線は向きがないので、`["a","b"]` と `["b","a"]` は同じ線であり、両方書いてはいけない（重複はエラー）。
 - `requirements` は、正解を一意に絞れる程度に具体的に書く。
 - `explanation` には「なぜこの構成か」と「ダミーが不要な理由」を書く。
 - 問題文・要件・解説は日本語で書く。
