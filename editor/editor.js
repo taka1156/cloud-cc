@@ -265,6 +265,8 @@ async function init() {
     const s = cur();
     if (!s || !confirm(`「${s.title || s.id}」を一覧から削除しますか？`)) return;
     state.sets.splice(state.index, 1);
+    // 全部消したら空の問題を用意して、フォームが使えない状態にしない
+    if (!state.sets.length) state.sets.push(blank());
     state.index = Math.min(state.index, state.sets.length - 1);
     afterBulk();
   });
@@ -320,7 +322,14 @@ async function init() {
     }
   });
 
-  select(-1);
+  // 開いた時点でフォームを使えるようにする：同梱の問題を読み込んで1問目を選ぶ。無ければ新規の問題で始める
+  try {
+    (await loadBundledSets("../")).forEach(upsert);
+  } catch (err) {
+    toast(`リポジトリの問題を読めませんでした: ${err.message}`);
+  }
+  if (!state.sets.length) state.sets.push(blank());
+  select(0);
 }
 
 init();
