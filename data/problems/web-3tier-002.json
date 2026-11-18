@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "web-3tier-002",
+  "title": "3層構造のWebアプリ",
+  "difficulty": 2,
+  "tags": ["3層", "EC2", "RDS"],
+  "statement": "社内向けのWebアプリを構築する。アクセスは独自ドメインから受け付け、アプリケーションサーバーは複数台で冗長化したい。データは永続化し、アプリケーションサーバーからのみ接続させたい。",
+  "requirements": [
+    "独自ドメインで受け付ける",
+    "HTTPのリクエストを複数のアプリケーションサーバーに振り分ける",
+    "データベースはマネージドサービスを使う"
+  ],
+  "deck": ["route53", "alb", "autoscaling", "ec2", "rds", "s3", "sqs"],
+  "answer": {
+    "requiredServices": ["route53", "alb", "ec2", "rds"],
+    "requiredFlows": [
+      ["route53", "alb"],
+      ["alb", "ec2"],
+      ["ec2", "rds"]
+    ]
+  },
+  "explanation": "Route 53 → ALB → EC2 → RDS の3層構成です。ALB が負荷を分散し、EC2 は Auto Scaling で台数を増減できます。山札にある S3 や SQS は今回の要件には不要なので、余分なカードとして扱われます。"
+}

@@ -1,0 +1,12 @@
+{
+  "name": "cloud-cc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS構成を組み立てるカードゲーム（PoC）",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "serve": "python3 -m http.server 8000"
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cloud-cc | AWS構成ゲーム</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>cloud-cc <small>AWS構成ゲーム PoC</small></h1>
+    <div class="toolbar">
+      <select id="set-select" aria-label="問題セット"></select>
+      <label class="btn">JSON取り込み<input id="import-file" type="file" accept=".json,application/json" hidden></label>
+      <a class="btn" href="editor/index.html">作問エディター</a>
+    </div>
+    <p id="status" class="status"></p>
+  </header>
+
+  <main class="game">
+    <section class="panel" id="problem"></section>
+
+    <section class="panel">
+      <h2>山札</h2>
+      <p class="meta">カードをクリックして「使う」カードを選ぶ</p>
+      <div id="deck" class="grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>構成</h2>
+      <div id="build" class="grid"></div>
+      <h3>接続</h3>
+      <p id="connect-hint" class="meta"></p>
+      <ul id="flows"></ul>
+      <div class="actions">
+        <button id="judge" class="primary" type="button">判定する</button>
+        <button id="reset" type="button">リセット</button>
+      </div>
+      <div id="result"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "_comment": "サービスカードのマスターデータ（固定値）。追加・変更はこのファイルを直接編集し、category は schema.js の CATEGORIES から選ぶ。",
+  "services": [
+    { "id": "route53", "name": "Route 53", "category": "network", "color": "#8C4FFF", "description": "DNSでドメインを名前解決" },
+    { "id": "cloudfront", "name": "CloudFront", "category": "network", "color": "#8C4FFF", "description": "CDNでコンテンツを世界中に配信" },
+    { "id": "waf", "name": "WAF", "category": "security", "color": "#DD344C", "description": "Webアプリへの攻撃を防御" },
+    { "id": "alb", "name": "ALB", "category": "network", "color": "#8C4FFF", "description": "HTTP(S)を複数サーバーへ振り分け" },
+    { "id": "api-gateway", "name": "API Gateway", "category": "integration", "color": "#E7157B", "description": "REST/WebSocket APIの入口" },
+    { "id": "ec2", "name": "EC2", "category": "compute", "color": "#ED7100", "description": "仮想サーバー" },
+    { "id": "ecs", "name": "ECS", "category": "compute", "color": "#ED7100", "description": "コンテナの実行基盤" },
+    { "id": "lambda", "name": "Lambda", "category": "compute", "color": "#ED7100", "description": "サーバーレスで関数を実行" },
+    { "id": "autoscaling", "name": "Auto Scaling", "category": "compute", "color": "#ED7100", "description": "負荷に応じてEC2台数を増減" },
+    { "id": "s3", "name": "S3", "category": "storage", "color": "#3F8624", "description": "オブジェクトストレージ" },
+    { "id": "efs", "name": "EFS", "category": "storage", "color": "#3F8624", "description": "複数サーバーで共有できるファイルシステム" },
+    { "id": "rds", "name": "RDS", "category": "database", "color": "#3B48CC", "description": "マネージドのリレーショナルDB" },
+    { "id": "dynamodb", "name": "DynamoDB", "category": "database", "color": "#3B48CC", "description": "キーバリュー型のNoSQL DB" },
+    { "id": "elasticache", "name": "ElastiCache", "category": "database", "color": "#3B48CC", "description": "インメモリキャッシュ" },
+    { "id": "sqs", "name": "SQS", "category": "integration", "color": "#E7157B", "description": "メッセージキュー" },
+    { "id": "sns", "name": "SNS", "category": "integration", "color": "#E7157B", "description": "通知（Pub/Sub）" },
+    { "id": "eventbridge", "name": "EventBridge", "category": "integration", "color": "#E7157B", "description": "イベントのルーティング" },
+    { "id": "nat-gateway", "name": "NAT Gateway", "category": "network", "color": "#8C4FFF", "description": "プライベートからの外向き通信" },
+    { "id": "iam", "name": "IAM", "category": "security", "color": "#DD344C", "description": "アクセス権限の管理" },
+    { "id": "kms", "name": "KMS", "category": "security", "color": "#DD344C", "description": "暗号化鍵の管理" },
+    { "id": "cloudwatch", "name": "CloudWatch", "category": "monitoring", "color": "#E7157B", "description": "メトリクスとログの監視" }
+  ]
+}
