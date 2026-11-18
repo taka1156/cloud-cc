@@ -3,7 +3,7 @@ import {
   mergeSets, parseProblemFile, h,
 } from "./data.js";
 import {
-  validateProblemSet, evaluate, conflictsWith, KIND_LABELS, SLOT_W, SLOT_H,
+  validateProblemSet, evaluate, conflictsWith, SLOT_W, SLOT_H,
 } from "./schema.js";
 
 const $ = (id) => document.getElementById(id);
@@ -16,6 +16,8 @@ const state = {
   set: null,
   tpl: null,
   placed: {}, // 枠ID → 山札のindex（同じサービスが複数枚あっても区別できるようにindexで持つ）
+  picked: null, // タップで選んだカード { idx, fromSlot }
+  judged: null, // 判定結果（枠の色分けに使う）
 };
 
 const svcOf = (id) => state.services.get(id)
@@ -40,6 +42,8 @@ async function init() {
   $("import-file").addEventListener("change", onImport);
   $("judge").addEventListener("click", judge);
   $("reset").addEventListener("click", () => state.set && openSet(state.set.id));
+  // 枠のカードを選んだ状態で山札の場所をタップすると、山札に戻す
+  $("tray").addEventListener("click", (e) => { if (!e.target.closest(".tray-card")) returnPicked(); });
 
   // 画面の向きが変わったら盤面を描き直す
   let portrait = null;
@@ -71,6 +75,8 @@ function openSet(id) {
   state.set = set;
   state.tpl = set ? state.templates.get(set.template) ?? null : null;
   state.placed = {};
+  state.picked = null;
+  state.judged = null;
   $("result").replaceChildren(h("p", { class: "meta" }, "枠にカードを置いたら「判定する」を押してください。"));
   if (!set) {
     $("problem").replaceChildren(h("p", {}, "問題セットがありません。JSONを取り込んでください。"));
@@ -199,15 +205,20 @@ function slotEl(s, L) {
     height: `${(SLOT_H / H) * 100}%`,
   };
   const idx = state.placed[s.id];
+  const picked = state.picked;
   if (idx === undefined) {
-    return h("div", { class: "slot empty", style, "data-slot": s.id },
-      h("span", { class: "slot-label" }, s.label),
-      h("span", { class: "slot-kind" }, KIND_LABELS[s.kind] ?? s.kind));
+    // 空き枠は役割の名前だけを出す（置けるカードの種類は出さない＝ヒントにしない）
+    const el = h("div", { class: `slot empty${state.judged ? " wrong" : ""}`, style, "data-slot": s.id },
+      h("span", { class: "slot-label" }, s.label));
+    el.addEventListener("click", () => tapSlot(s.id));
+    return el;
   }
   const svc = svcOf(state.set.deck[idx]);
+  const sel = picked && picked.fromSlot === s.id;
+  const mark = state.judged ? (state.judged.correct.includes(s.id) ? " right" : " wrong") : "";
   const el = h("div", {
-    class: "slot filled",
-    style: { ...style, borderTopColor: svc.color },
+    class: `slot filled${sel ? " picked" : ""}${mark}`,
+    style: { ...style, "--c": svc.color },
     "data-slot": s.id,
     title: `${s.label}: ${svc.name}`,
   }, iconEl(svc.id), h("span", { class: "card-name" }, svc.name));
@@ -223,78 +234,68 @@ function renderTray() {
   const rest = deck.map((id, i) => ({ id, i })).filter(({ i }) => !used.has(i));
   $("tray").replaceChildren(...rest.map(({ id, i }) => {
     const svc = svcOf(id);
-    const el = h("div", { class: "tray-card", title: svc.description ?? svc.name, style: { borderTopColor: svc.color } },
-      iconEl(id), h("span", {}, svc.name));
+    const sel = state.picked && state.picked.idx === i && !state.picked.fromSlot;
+    const el = h("div", {
+      class: `tray-card${sel ? " picked" : ""}`,
+      title: svc.name,
+      style: { "--c": svc.color },
+    }, iconEl(id), h("span", { class: "card-name" }, svc.name));
     el.addEventListener("pointerdown", (e) => startDrag(e, i, null));
     return el;
   }));
   $("remaining").textContent = state.set ? `山札 残り ${rest.length} / ${deck.length} 枚` : "";
 }
 
-/* ---------- 配置のルール（カード側の placeableIn / cannotWith） ---------- */
+/* ---------- 配置 ---------- */
 
-/** idx のカードを slotId に置けない理由を返す。置けるなら null */
-function placeError(slotId, idx, ignore = []) {
-  const slot = slotOf(slotId);
-  const svc = svcOf(state.set.deck[idx]);
-  if (!svc.placeableIn.includes(slot.kind)) {
-    const where = svc.placeableIn.map((k) => KIND_LABELS[k] ?? k).join("・");
-    return `${svc.name} は「${KIND_LABELS[slot.kind] ?? slot.kind}」の枠には置けません（置ける枠: ${where}）`;
-  }
-  for (const [sid, j] of Object.entries(state.placed)) {
-    if (sid === slotId || ignore.includes(sid)) continue;
-    const other = svcOf(state.set.deck[j]);
-    if (conflictsWith(svc, other)) return `${svc.name} は ${other.name} と一緒には使えません`;
-  }
-  return null;
-}
-
-/** カードを枠に置く。置いてあったカードは、移動元の枠と入れ替えるか山札に戻す */
+/**
+ * カードを枠に置く。どのカードもどの枠にも置ける（間違いは判定で学ぶ）。
+ * 置き先にカードがあれば、移動元の枠と入れ替えるか、山札に戻す。
+ */
 function place(slotId, idx, fromSlot) {
   const occupant = state.placed[slotId];
-  const swapping = fromSlot && occupant !== undefined && occupant !== idx;
-  const err = placeError(slotId, idx, fromSlot ? [fromSlot] : []);
-  if (err) return showStatus(err);
-  if (swapping) {
-    const err2 = placeError(fromSlot, occupant, [slotId, fromSlot]);
-    if (err2) return showStatus(`入れ替えできません: ${err2}`);
-  }
   if (fromSlot) delete state.placed[fromSlot];
-  if (swapping) state.placed[fromSlot] = occupant;
+  if (occupant !== undefined && occupant !== idx && fromSlot) state.placed[fromSlot] = occupant;
   state.placed[slotId] = idx;
+  state.picked = null;
+  state.judged = null;
   showStatus("");
   renderAll();
 }
 
-/** クリックしたカードを、置ける空き枠の先頭に入れる */
-function autoPlace(idx) {
-  for (const s of visibleSlots()) {
-    if (state.placed[s.id] !== undefined) continue;
-    if (!placeError(s.id, idx)) return place(s.id, idx, null);
-  }
-  const svc = svcOf(state.set.deck[idx]);
-  showStatus(`${svc.name} を置ける空きの枠がありません`);
+/* ---------- タップ操作（カードを選ぶ → 枠をタップ） ---------- */
+
+function pick(idx, fromSlot) {
+  const same = state.picked && state.picked.idx === idx && state.picked.fromSlot === fromSlot;
+  state.picked = same ? null : { idx, fromSlot };
+  showStatus(state.picked ? "置きたい枠をタップしてください" : "");
+  renderAll();
 }
 
-function markTargets(idx, fromSlot) {
-  for (const el of document.querySelectorAll("#board .slot")) {
-    el.classList.add(placeError(el.dataset.slot, idx, fromSlot ? [fromSlot] : []) ? "ng" : "ok");
-  }
+function tapSlot(slotId) {
+  if (!state.picked) return;
+  place(slotId, state.picked.idx, state.picked.fromSlot);
 }
 
-function clearTargets() {
-  document.querySelectorAll("#board .slot").forEach((el) => el.classList.remove("ok", "ng"));
+function returnPicked() {
+  if (!state.picked?.fromSlot) return;
+  delete state.placed[state.picked.fromSlot];
+  state.picked = null;
+  state.judged = null;
+  showStatus("");
+  renderAll();
 }
 
 /**
- * カードのドラッグ。山札から（fromSlot=null）でも枠から（fromSlot=枠ID）でも同じ処理。
- * - 枠の上で離す → その枠に置く
+ * カードの操作。山札から（fromSlot=null）でも枠から（fromSlot=枠ID）でも同じ処理。
+ * - ドラッグして枠の上で離す → その枠に置く
  * - 枠のカードを山札の上で離す → 外して山札に戻す
- * - 動かさずに離す → 山札のカードなら空き枠に自動で置く
+ * - 動かさずに離す（タップ）→ そのカードを選ぶ。次に枠をタップすると置ける
  */
 function startDrag(e, idx, fromSlot) {
   if (e.button !== 0 || !state.tpl) return;
   e.preventDefault();
+  e.stopPropagation();
   const svc = svcOf(state.set.deck[idx]);
   const startX = e.clientX;
   const startY = e.clientY;
@@ -303,10 +304,9 @@ function startDrag(e, idx, fromSlot) {
   const move = (ev) => {
     if (!ghost) {
       if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < 6) return;
-      ghost = h("div", { class: "ghost", style: { borderTopColor: svc.color } },
-        iconEl(svc.id), h("span", {}, svc.name));
+      ghost = h("div", { class: "ghost", style: { "--c": svc.color } },
+        iconEl(svc.id), h("span", { class: "card-name" }, svc.name));
       document.body.append(ghost);
-      markTargets(idx, fromSlot);
     }
     ghost.style.left = `${ev.clientX}px`;
     ghost.style.top = `${ev.clientY}px`;
@@ -330,9 +330,10 @@ function startDrag(e, idx, fromSlot) {
     window.removeEventListener("pointerup", up);
     window.removeEventListener("pointercancel", up);
     clearInterval(scrollTimer);
-    clearTargets();
     if (!ghost) {
-      if (!fromSlot) autoPlace(idx);
+      // 枠のカードを選んでいる状態で別の枠のカードをタップしたら、入れ替え
+      if (fromSlot && state.picked && state.picked.fromSlot !== fromSlot) return tapSlot(fromSlot);
+      pick(idx, fromSlot);
       return;
     }
     ghost.remove();
@@ -342,6 +343,8 @@ function startDrag(e, idx, fromSlot) {
       place(slotNode.dataset.slot, idx, fromSlot);
     } else if (fromSlot && target?.closest("#tray")) {
       delete state.placed[fromSlot];
+      state.picked = null;
+      state.judged = null;
       renderAll();
     }
   };
@@ -363,19 +366,43 @@ function judge() {
     return;
   }
   const r = evaluate(s, placedBySlot);
+  state.judged = r;
+  state.picked = null;
+  renderBoard();
+
   const nameOf = (id) => svcOf(id).name;
+
+  // 間違えた枠ごとに、なぜ違うのかを返す（カード側のルール placeableIn を学びに使う）
+  const feedback = r.missing.map((slotId) => {
+    const slot = slotOf(slotId);
+    const put = placedBySlot[slotId];
+    if (!put) return `「${slot.label}」が空いています`;
+    const svc = svcOf(put);
+    if (!svc.placeableIn.includes(slot.kind)) {
+      return `「${slot.label}」に ${svc.name} は役割が合いません（${svc.name}: ${svc.description}）`;
+    }
+    return `「${slot.label}」に ${svc.name} は置けますが、この問題の要件には合いません`;
+  });
+
+  // 一緒に使えないカードの組み合わせ（カード側のルール cannotWith）
+  const used = [...new Set(Object.values(placedBySlot))].map(svcOf);
+  const conflicts = [];
+  used.forEach((a, i) => used.slice(i + 1).forEach((b) => {
+    if (conflictsWith(a, b)) conflicts.push(`${a.name} と ${b.name} は一緒には使えません`);
+  }));
+
   const parts = [
     h("div", { class: `verdict ${r.passed ? "pass" : "fail"}` },
       `${r.passed ? "合格" : "不合格"}　正解の枠 ${r.correct.length} / ${r.correct.length + r.missing.length}（${r.score}%）`),
-    r.missing.length
-      ? h("p", {}, `違う・空いている枠: ${r.missing.map((id) =>
-        `${slotLabel(id)}${placedBySlot[id] ? `（${nameOf(placedBySlot[id])}）` : "（空）"}`).join("、")}`)
+    feedback.length || conflicts.length
+      ? h("ul", { class: "feedback" }, [...feedback, ...conflicts].map((m) => h("li", {}, m)))
       : null,
-    h("h3", {}, "模範解答"),
-    h("ul", {}, Object.entries(s.answer.slots).map(([slot, svc]) =>
-      h("li", {}, `${slotLabel(slot)}: ${nameOf(svc)}`))),
-    h("h3", {}, "解説"),
-    h("p", { class: "statement" }, s.explanation),
+    h("p", { class: "meta" }, "盤面の緑は正解、赤は間違いの枠です。カードを動かすと判定はやり直しになります。"),
+    h("details", {},
+      h("summary", {}, "模範解答と解説を見る"),
+      h("ul", {}, Object.entries(s.answer.slots).map(([slot, svc]) =>
+        h("li", {}, `${slotLabel(slot)}: ${nameOf(svc)}`))),
+      h("p", { class: "statement" }, s.explanation)),
   ];
   $("result").replaceChildren(...parts.filter(Boolean));
 }

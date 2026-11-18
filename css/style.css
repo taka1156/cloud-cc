@@ -102,43 +102,67 @@ select, input, textarea {
 .frame .zone-label { fill: var(--zone); font-size: 16px; font-weight: 600; }
 .frame .fixed-link { stroke: #d6dbe3; stroke-width: 3; stroke-linecap: round; }
 
-/* 枠 */
+/* 枠。中身は枠の大きさに合わせて縮む（container query）ので、スマホの小さい枠でも崩れない */
 .slot {
   position: absolute;
+  container-type: size;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4%;
   text-align: center;
-  padding: 4px;
-  font-size: 12px;
-  transition: opacity 0.12s, outline-color 0.12s;
+  overflow: hidden;
+  transition: box-shadow 0.12s, outline-color 0.12s;
 }
 .slot > * { pointer-events: none; }
 .slot.empty {
   border: 2px dashed #7d8796;
   background: #2c3440;
   color: #d4d9e1;
+  cursor: pointer;
 }
-.slot.empty .slot-label { font-weight: 700; }
-.slot.empty .slot-kind { font-size: 11px; color: #9aa5b4; }
+.slot .slot-label {
+  font-weight: 700;
+  font-size: clamp(9px, 14cqw, 13px);
+  line-height: 1.25;
+  padding: 0 6%;
+  overflow-wrap: anywhere;
+}
 .slot.filled {
-  border: 1px solid #c9ced6;
-  border-top: 5px solid #999;
   background: #fff;
   color: var(--fg);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--c, #999);
+  box-shadow: inset 0 5px 0 var(--c, #999), 0 3px 8px rgba(0, 0, 0, 0.3);
   cursor: grab;
   touch-action: none;
+  padding-top: 5px;
 }
-.slot .card-name { font-weight: 700; }
-.slot.ok { outline: 3px solid #4caf50; outline-offset: 2px; }
-.slot.ng { opacity: 0.3; }
+.slot.filled .icon,
+.slot.filled .icon img,
+.slot.filled .badge {
+  width: min(36px, 46cqh);
+  height: min(36px, 46cqh);
+}
+.slot.filled .badge { font-size: clamp(8px, 15cqh, 12px); }
+.slot .card-name {
+  font-weight: 700;
+  font-size: clamp(9px, 13cqw, 12px);
+  line-height: 1.15;
+  max-width: 94%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* タップで選んだカード */
+.slot.picked, .tray-card.picked { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* 判定後の色分け */
+.slot.right { outline: 3px solid #4caf50; outline-offset: 2px; }
+.slot.wrong { outline: 3px solid #ef5350; outline-offset: 2px; }
 
-/* アイコン（assets/aws/<id>.svg）。無ければバッジで代替 */
-.icon { display: block; width: 36px; height: 36px; pointer-events: none; }
+/* アイコン（services.json の icon）。無ければバッジで代替 */
+.icon { display: block; width: 36px; height: 36px; flex: 0 0 auto; pointer-events: none; }
 .icon img { width: 36px; height: 36px; display: block; pointer-events: none; }
 .badge {
   width: 36px;
@@ -170,19 +194,19 @@ select, input, textarea {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 6px;
-  border: 1px solid var(--line);
-  border-top: 5px solid #999;
-  border-radius: 8px;
+  padding: 10px 6px 8px;
+  border: 2px solid var(--c, #999);
+  box-shadow: inset 0 5px 0 var(--c, #999);
+  border-radius: 10px;
   background: #fff;
   cursor: grab;
   touch-action: none;
   user-select: none;
   font-size: 12px;
-  font-weight: 600;
   text-align: center;
 }
-.tray-card:hover { box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12); }
+.tray-card .card-name { font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tray-card:hover { box-shadow: inset 0 5px 0 var(--c, #999), 0 3px 8px rgba(0, 0, 0, 0.12); }
 .tray-card * { pointer-events: none; }
 
 /* ドラッグ中のゴースト */
@@ -191,19 +215,22 @@ select, input, textarea {
   pointer-events: none;
   transform: translate(-50%, -50%);
   background: #fff;
-  border-top: 5px solid #999;
+  border: 2px solid var(--c, #999);
+  box-shadow: inset 0 5px 0 var(--c, #999), 0 8px 20px rgba(0, 0, 0, 0.3);
   border-radius: 10px;
-  padding: 6px 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  padding: 10px 12px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   z-index: 10;
 }
 
+.feedback { padding-left: 20px; line-height: 1.6; }
+.feedback li { margin-bottom: 4px; }
+details summary { cursor: pointer; font-weight: 700; margin: 8px 0; }
 .verdict { padding: 10px; border-radius: 8px; font-weight: 700; margin: 0 0 8px; }
 .verdict.pass { background: #e8f5e9; color: var(--ok); }
 .verdict.fail { background: #ffebee; color: var(--ng); }

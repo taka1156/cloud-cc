@@ -74,7 +74,13 @@ export function h(tag, props = {}, ...children) {
   for (const [k, v] of Object.entries(props)) {
     if (k === "class") el.className = v;
     else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
-    else if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+    else if (k === "style" && typeof v === "object") {
+      // "--c" のようなCSS変数は setProperty でないと入らない
+      for (const [sk, sv] of Object.entries(v)) {
+        if (sk.startsWith("--")) el.style.setProperty(sk, sv);
+        else el.style[sk] = sv;
+      }
+    }
     else if (v === true) el.setAttribute(k, "");
     else if (v !== false && v != null) el.setAttribute(k, v);
   }
