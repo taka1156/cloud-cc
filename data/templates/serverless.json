@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "serverless",
+  "name": "サーバーレスAPI",
+  "description": "API・関数・データベースを中心にしたサーバーレス構成",
+  "width": 960,
+  "height": 520,
+  "zones": [
+    { "label": "Region", "x": 20, "y": 20, "w": 920, "h": 480 }
+  ],
+  "slots": [
+    { "id": "api", "kind": "api", "label": "API入口", "x": 80, "y": 220 },
+    { "id": "fn", "kind": "compute", "label": "処理", "x": 320, "y": 220 },
+    { "id": "data", "kind": "data", "label": "データ", "x": 560, "y": 220 },
+    { "id": "sec", "kind": "security", "label": "権限", "x": 80, "y": 380 },
+    { "id": "queue", "kind": "messaging", "label": "キュー・通知", "x": 320, "y": 380 },
+    { "id": "ops", "kind": "ops", "label": "監視", "x": 560, "y": 380 }
+  ]
+}

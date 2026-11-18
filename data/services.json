@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "_comment": "サービスカードのマスター（固定値）。placeableIn = 置ける枠の種類（schema.js の KINDS）。cannotWith = 一緒には使えないサービスID。",
+  "services": [
+    { "id": "route53", "name": "Route 53", "category": "network", "color": "#8C4FFF", "description": "DNSでドメインを名前解決", "placeableIn": ["edge"] },
+    { "id": "cloudfront", "name": "CloudFront", "category": "network", "color": "#8C4FFF", "description": "CDNでコンテンツを世界中に配信", "placeableIn": ["edge"] },
+    { "id": "waf", "name": "WAF", "category": "security", "color": "#DD344C", "description": "Webアプリへの攻撃を防御（CloudFront・ALB・API GWの前に置く）", "placeableIn": ["edge", "lb", "api"] },
+    { "id": "alb", "name": "ALB", "category": "network", "color": "#8C4FFF", "description": "HTTP(S)を複数サーバーへ振り分け", "placeableIn": ["lb"] },
+    { "id": "api-gateway", "name": "API Gateway", "category": "integration", "color": "#E7157B", "description": "REST/WebSocket APIの入口", "placeableIn": ["api"] },
+    { "id": "ec2", "name": "EC2", "category": "compute", "color": "#ED7100", "description": "仮想サーバー", "placeableIn": ["compute"] },
+    { "id": "ecs", "name": "ECS", "category": "compute", "color": "#ED7100", "description": "コンテナの実行基盤", "placeableIn": ["compute"] },
+    { "id": "lambda", "name": "Lambda", "category": "compute", "color": "#ED7100", "description": "サーバーレスで関数を実行", "placeableIn": ["compute"], "cannotWith": ["autoscaling"] },
+    { "id": "autoscaling", "name": "Auto Scaling", "category": "compute", "color": "#ED7100", "description": "負荷に応じてEC2台数を増減（Lambdaとは一緒に使えない）", "placeableIn": ["compute", "ops"], "cannotWith": ["lambda"] },
+    { "id": "s3", "name": "S3", "category": "storage", "color": "#3F8624", "description": "オブジェクトストレージ", "placeableIn": ["storage"] },
+    { "id": "efs", "name": "EFS", "category": "storage", "color": "#3F8624", "description": "複数サーバーで共有できるファイルシステム", "placeableIn": ["storage"] },
+    { "id": "rds", "name": "RDS", "category": "database", "color": "#3B48CC", "description": "マネージドのリレーショナルDB", "placeableIn": ["data"] },
+    { "id": "dynamodb", "name": "DynamoDB", "category": "database", "color": "#3B48CC", "description": "キーバリュー型のNoSQL DB", "placeableIn": ["data"] },
+    { "id": "elasticache", "name": "ElastiCache", "category": "database", "color": "#3B48CC", "description": "インメモリキャッシュ", "placeableIn": ["data"] },
+    { "id": "sqs", "name": "SQS", "category": "integration", "color": "#E7157B", "description": "メッセージキュー", "placeableIn": ["messaging"] },
+    { "id": "sns", "name": "SNS", "category": "integration", "color": "#E7157B", "description": "通知（Pub/Sub）", "placeableIn": ["messaging"] },
+    { "id": "eventbridge", "name": "EventBridge", "category": "integration", "color": "#E7157B", "description": "イベントのルーティング", "placeableIn": ["messaging"] },
+    { "id": "nat-gateway", "name": "NAT Gateway", "category": "network", "color": "#8C4FFF", "description": "プライベートからの外向き通信", "placeableIn": ["network"] },
+    { "id": "iam", "name": "IAM", "category": "security", "color": "#DD344C", "description": "アクセス権限の管理", "placeableIn": ["security"] },
+    { "id": "kms", "name": "KMS", "category": "security", "color": "#DD344C", "description": "暗号化鍵の管理", "placeableIn": ["security"] },
+    { "id": "cloudwatch", "name": "CloudWatch", "category": "monitoring", "color": "#E7157B", "description": "メトリクスとログの監視", "placeableIn": ["ops"] },
+    { "id": "codepipeline", "name": "CodePipeline", "category": "devops", "color": "#C925D1", "description": "リリースまでの工程を自動化", "placeableIn": ["devops"] },
+    { "id": "codebuild", "name": "CodeBuild", "category": "devops", "color": "#C925D1", "description": "ビルドとテストをマネージドで実行", "placeableIn": ["devops"] },
+    { "id": "cloudformation", "name": "CloudFormation", "category": "devops", "color": "#C925D1", "description": "テンプレートでインフラを構築（IaC）", "placeableIn": ["devops"] },
+    { "id": "bedrock", "name": "Bedrock", "category": "ai", "color": "#01A88D", "description": "基盤モデルをAPIで利用", "placeableIn": ["ai"] },
+    { "id": "sagemaker", "name": "SageMaker", "category": "ai", "color": "#01A88D", "description": "機械学習モデルの学習と配備", "placeableIn": ["ai"] },
+    { "id": "rekognition", "name": "Rekognition", "category": "ai", "color": "#01A88D", "description": "画像・動画の分析", "placeableIn": ["ai"] }
+  ]
+}

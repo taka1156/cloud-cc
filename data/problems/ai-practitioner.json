@@ -1,0 +1,100 @@
+[
+  {
+    "schemaVersion": 2,
+    "id": "aip-001",
+    "title": "社内向けチャットボットを作る",
+    "difficulty": 1,
+    "tags": ["AIプラクティショナー", "生成AI"],
+    "statement": "社員からの質問に答える社内チャットボットを作りたい。自前でAIモデルを学習させる時間はなく、既存の基盤モデルを使いたい。",
+    "requirements": [
+      "APIとして公開する",
+      "サーバーレスで処理する",
+      "既存の基盤モデルを使う"
+    ],
+    "template": "ai-app",
+    "deck": ["api-gateway", "lambda", "bedrock", "sagemaker", "rds"],
+    "answer": {
+      "slots": { "api": "api-gateway", "fn": "lambda", "model": "bedrock" }
+    },
+    "links": [["api", "fn"], ["fn", "model"]],
+    "explanation": "API Gateway で受けたリクエストを Lambda が処理し、Bedrock の基盤モデルに問い合わせます。SageMaker もモデルの枠に置けますが、モデルを自前で学習させるためのサービスです。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "aip-002",
+    "title": "投稿画像の不適切チェック",
+    "difficulty": 1,
+    "tags": ["AIプラクティショナー", "画像分析"],
+    "statement": "ユーザーが投稿する画像を公開前に自動チェックしたい。画像の保存をきっかけに処理を動かし、学習済みのAIで分析したい。",
+    "requirements": [
+      "投稿画像を保存する",
+      "保存をきっかけに処理を実行する",
+      "学習済みのAIで画像を分析する"
+    ],
+    "template": "ai-app",
+    "deck": ["s3", "lambda", "rekognition", "bedrock", "sns"],
+    "answer": {
+      "slots": { "kb": "s3", "fn": "lambda", "model": "rekognition" }
+    },
+    "links": [["kb", "fn"], ["fn", "model"]],
+    "explanation": "画像が S3 に保存されると Lambda が起動し、Rekognition で画像を分析します。Bedrock もモデルの枠に置けますが、画像の不適切チェックには専用の Rekognition が向いています。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "aip-003",
+    "title": "社内文書をもとに回答する",
+    "difficulty": 2,
+    "tags": ["AIプラクティショナー", "生成AI", "RAG"],
+    "statement": "社内規程の文書をもとに、社員の質問へ回答する仕組みを作りたい。文書を保管し、その内容を参照して基盤モデルで回答を生成したい。",
+    "requirements": [
+      "社内文書をオブジェクトストレージに保管する",
+      "回答は基盤モデルで生成する"
+    ],
+    "template": "ai-app",
+    "deck": ["s3", "bedrock", "sagemaker", "efs"],
+    "answer": {
+      "slots": { "kb": "s3", "model": "bedrock" }
+    },
+    "links": [["kb", "model"]],
+    "explanation": "社内文書を S3 に置き、その内容を参照情報として Bedrock に渡すことで、根拠のある回答を生成します（RAG）。EFS もデータの枠に置けますが、オブジェクトストレージではありません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "aip-004",
+    "title": "独自の予測モデルを学習させる",
+    "difficulty": 2,
+    "tags": ["AIプラクティショナー", "機械学習"],
+    "statement": "過去の売上データから来月の需要を予測するモデルを作りたい。データはオブジェクトストレージにあり、学習から配備までまとめて行いたい。",
+    "requirements": [
+      "過去データをオブジェクトストレージから読み込む",
+      "独自のモデルを学習・配備する"
+    ],
+    "template": "ai-app",
+    "deck": ["s3", "sagemaker", "bedrock", "rekognition", "ec2"],
+    "answer": {
+      "slots": { "kb": "s3", "model": "sagemaker" }
+    },
+    "links": [["kb", "model"]],
+    "explanation": "S3 にある学習データを SageMaker が読み込み、モデルを学習・配備します。Bedrock や Rekognition もモデルの枠に置けますが、目的に合わせた独自モデルは作れません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "aip-005",
+    "title": "生成AIを安全に運用する",
+    "difficulty": 2,
+    "tags": ["AIプラクティショナー", "責任あるAI", "運用"],
+    "statement": "基盤モデルを業務に組み込むにあたり、誰が呼び出せるかを制限し、利用状況を監視したい。不適切な利用や異常な利用量を早く把握したい。",
+    "requirements": [
+      "基盤モデルを使う",
+      "呼び出せる主体を限定する",
+      "利用状況を監視する"
+    ],
+    "template": "ai-app",
+    "deck": ["iam", "cloudwatch", "bedrock", "kms", "rekognition"],
+    "answer": {
+      "slots": { "model": "bedrock", "sec": "iam", "mon": "cloudwatch" }
+    },
+    "links": [["sec", "model"], ["mon", "model"]],
+    "explanation": "IAM で Bedrock を呼び出せる主体を制限し、CloudWatch で利用量や異常を監視します。KMS も権限の枠に置けますが、鍵の管理であって呼び出し権限の制御ではありません。"
+  }
+]

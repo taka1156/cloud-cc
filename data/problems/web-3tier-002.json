@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "id": "web-3tier-002",
+  "title": "3層構造のWebアプリ",
+  "difficulty": 2,
+  "tags": ["3層", "EC2", "RDS"],
+  "statement": "社内向けのWebアプリを構築する。アクセスは独自ドメインから受け付け、アプリケーションサーバーは2つのAZで冗長化したい。データはマネージドのリレーショナルDBに保存したい。",
+  "requirements": [
+    "独自ドメインで受け付ける",
+    "HTTPのリクエストを2台のアプリケーションサーバーに振り分ける",
+    "データベースはマネージドのリレーショナルDBを使う"
+  ],
+  "template": "three-tier",
+  "deck": ["route53", "alb", "ec2", "ec2", "rds", "s3", "sqs"],
+  "answer": {
+    "slots": { "dns": "route53", "lb": "alb", "app1": "ec2", "app2": "ec2", "db1": "rds" }
+  },
+  "links": [["dns", "lb"], ["lb", "app1"], ["lb", "app2"], ["app1", "db1"]],
+  "explanation": "Route 53 → ALB → EC2（2つのAZ）→ RDS の3層構成です。ALB が2台の EC2 に負荷を分散し、片方のAZが止まってもサービスを続けられます。S3 や SQS はこの盤面に置ける枠がありません。"
+}

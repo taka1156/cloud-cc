@@ -1,0 +1,299 @@
+:root {
+  --bg: #f4f5f7;
+  --fg: #1d232b;
+  --muted: #667085;
+  --line: #d4d9e1;
+  --accent: #ff9900;
+  --ok: #2e7d32;
+  --ng: #c62828;
+  --zone: #1f9ea6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+header { padding: 12px 20px; background: #232f3e; color: #fff; }
+header h1 { margin: 0; font-size: 20px; }
+header h1 small { font-weight: 400; opacity: 0.7; }
+header a { color: #ffd27a; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+.toolbar select { width: auto; min-width: 220px; }
+
+button, .btn {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--fg);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+button:disabled { opacity: 0.5; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 600; }
+button.danger { color: var(--ng); }
+
+select, input, textarea {
+  font: inherit;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  width: 100%;
+}
+
+.status { margin: 6px 0 0; min-height: 1em; color: #ffd27a; white-space: pre-line; }
+.meta { color: var(--muted); font-size: 13px; }
+.statement { white-space: pre-wrap; line-height: 1.7; }
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+.panel h2 { margin: 0; font-size: 17px; }
+
+/* ---------- ゲーム画面 ---------- */
+
+.game {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+  padding: 12px;
+  align-items: start;
+}
+.game > * { min-width: 0; }
+.side { display: flex; flex-direction: column; gap: 12px; }
+.board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.board-head .toolbar { margin-top: 0; }
+
+/* 構成図（テンプレート）。縦長の画面では JS が縦向きに並べ替える */
+.board {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  aspect-ratio: 960 / 520;
+  margin: 8px auto 0;
+  border-radius: 10px;
+  background: #232a34;
+  overflow: hidden;
+  user-select: none;
+}
+.board-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aab3c0;
+  margin: 0;
+}
+.frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.frame .zone { fill: rgba(31, 158, 166, 0.06); stroke: var(--zone); stroke-width: 2; stroke-dasharray: 8 6; }
+.frame .zone-label { fill: var(--zone); font-size: 16px; font-weight: 600; }
+.frame .fixed-link { stroke: #d6dbe3; stroke-width: 3; stroke-linecap: round; }
+
+/* 枠。中身は枠の大きさに合わせて縮む（container query）ので、スマホの小さい枠でも崩れない */
+.slot {
+  position: absolute;
+  container-type: size;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4%;
+  text-align: center;
+  overflow: hidden;
+  transition: box-shadow 0.12s, outline-color 0.12s;
+}
+.slot > * { pointer-events: none; }
+.slot.empty {
+  border: 2px dashed #7d8796;
+  background: #2c3440;
+  color: #d4d9e1;
+  cursor: pointer;
+}
+.slot .slot-label {
+  font-weight: 700;
+  font-size: clamp(9px, 14cqw, 13px);
+  line-height: 1.25;
+  padding: 0 6%;
+  overflow-wrap: anywhere;
+}
+.slot.filled {
+  background: #fff;
+  color: var(--fg);
+  border: 2px solid var(--c, #999);
+  box-shadow: inset 0 5px 0 var(--c, #999), 0 3px 8px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  touch-action: none;
+  padding-top: 5px;
+}
+.slot.filled .icon,
+.slot.filled .icon img,
+.slot.filled .badge {
+  width: min(36px, 46cqh);
+  height: min(36px, 46cqh);
+}
+.slot.filled .badge { font-size: clamp(8px, 15cqh, 12px); }
+.slot .card-name {
+  font-weight: 700;
+  font-size: clamp(9px, 13cqw, 12px);
+  line-height: 1.15;
+  max-width: 94%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* タップで選んだカード */
+.slot.picked, .tray-card.picked { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* 判定後の色分け */
+.slot.right { outline: 3px solid #4caf50; outline-offset: 2px; }
+.slot.wrong { outline: 3px solid #ef5350; outline-offset: 2px; }
+
+/* アイコン（services.json の icon）。無ければバッジで代替 */
+.icon { display: block; width: 36px; height: 36px; flex: 0 0 auto; pointer-events: none; }
+.icon img { width: 36px; height: 36px; display: block; pointer-events: none; }
+.badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* 山札 */
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 96px;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 10px;
+  background: #eef1f5;
+}
+.tray-card {
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px 8px;
+  border: 2px solid var(--c, #999);
+  box-shadow: inset 0 5px 0 var(--c, #999);
+  border-radius: 10px;
+  background: #fff;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  font-size: 12px;
+  text-align: center;
+}
+.tray-card .card-name { font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tray-card:hover { box-shadow: inset 0 5px 0 var(--c, #999), 0 3px 8px rgba(0, 0, 0, 0.12); }
+.tray-card * { pointer-events: none; }
+
+/* ドラッグ中のゴースト */
+.ghost {
+  position: fixed;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 2px solid var(--c, #999);
+  box-shadow: inset 0 5px 0 var(--c, #999), 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 10px 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 10;
+}
+
+.feedback { padding-left: 20px; line-height: 1.6; }
+.feedback li { margin-bottom: 4px; }
+details summary { cursor: pointer; font-weight: 700; margin: 8px 0; }
+.verdict { padding: 10px; border-radius: 8px; font-weight: 700; margin: 0 0 8px; }
+.verdict.pass { background: #e8f5e9; color: var(--ok); }
+.verdict.fail { background: #ffebee; color: var(--ng); }
+
+/* ---------- エディター画面 ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 12px;
+  padding: 12px;
+  align-items: start;
+}
+aside {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+aside h2 { margin-top: 0; font-size: 16px; }
+#set-list { list-style: none; padding: 0; margin: 0; }
+#set-list li {
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+#set-list li:hover { background: #f1f3f6; }
+#set-list li.active { background: #fff4dc; }
+#set-list small { color: var(--muted); white-space: nowrap; }
+.layout main section, .layout main fieldset {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+fieldset label { display: block; margin: 8px 0; }
+.row { display: flex; gap: 8px; align-items: center; }
+.row label { flex: 1; margin: 0; }
+.qty-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 12px; }
+.qty { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 0; }
+.qty input { width: 56px; padding: 2px 4px; }
+.qty small { color: var(--muted); }
+.slot-rows { display: grid; gap: 6px; }
+.slot-row .slot-name { flex: 0 0 220px; font-size: 14px; }
+#preview { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+#toast { min-height: 1em; }
+
+@media (max-width: 900px) {
+  .game, .layout { grid-template-columns: 1fr; }
+  /* 狭い画面では山札を画面下に固定し、縦長の盤面をスクロールしても手札が見えるようにする */
+  .tray {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-height: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+  }
+  .tray-card { flex: 0 0 auto; width: 84px; }
+}

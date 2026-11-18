@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "id": "serverless-api-003",
+  "title": "サーバーレスのAPI",
+  "difficulty": 2,
+  "tags": ["サーバーレス", "API"],
+  "statement": "スマートフォンアプリから呼び出す注文APIを作りたい。サーバーの管理はせず、アクセスが少ない時間帯は費用をかけたくない。注文データは素早く読み書きできる必要がある。",
+  "requirements": [
+    "REST APIとして公開する",
+    "サーバーを管理しない",
+    "注文データをキーで素早く読み書きする"
+  ],
+  "template": "serverless",
+  "deck": ["api-gateway", "lambda", "dynamodb", "cloudwatch", "ec2", "rds", "sqs"],
+  "answer": {
+    "slots": { "api": "api-gateway", "fn": "lambda", "data": "dynamodb" }
+  },
+  "links": [["api", "fn"], ["fn", "data"]],
+  "explanation": "API Gateway でリクエストを受け、Lambda で処理し、DynamoDB に保存します。リクエストごとの課金でサーバー管理も不要です。RDS もデータの枠に置けますが、キーで素早く読み書きする用途には DynamoDB が向いています。EC2 は「処理」の枠に置けますが、サーバー管理が必要になるため不正解です。"
+}

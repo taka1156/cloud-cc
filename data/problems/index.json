@@ -1,0 +1,11 @@
+{
+  "files": [
+    "ai-practitioner.json",
+    "cloud-practitioner.json",
+    "devops.json",
+    "serverless-api-003.json",
+    "solutions-architect.json",
+    "web-3tier-002.json",
+    "web-static-001.json"
+  ]
+}

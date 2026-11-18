@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cloud-cc | AWS構成ゲーム</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>cloud-cc <small>AWS構成ゲーム PoC</small></h1>
+    <div class="toolbar">
+      <select id="set-select" aria-label="問題セット"></select>
+      <label class="btn">JSON取り込み<input id="import-file" type="file" accept=".json,application/json" hidden></label>
+      <a class="btn" href="editor/index.html">作問エディター</a>
+    </div>
+    <p id="status" class="status"></p>
+  </header>
+
+  <main class="game">
+    <div class="side">
+      <section class="panel" id="problem"></section>
+      <section class="panel">
+        <div id="result"><p class="meta">枠にカードを置いたら「判定する」を押してください。</p></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="board-head">
+        <h2>構成図</h2>
+        <div class="toolbar">
+          <span id="remaining" class="meta"></span>
+          <button id="judge" class="primary" type="button">判定する</button>
+          <button id="reset" type="button">リセット</button>
+        </div>
+      </div>
+      <p class="meta">
+        山札のカードを構成図の枠へドラッグします（カードをタップして選び、枠をタップしても置けます）。
+        どのカードもどの枠にも置けます。正しいかどうかは「判定する」で確かめてください。
+        置いたカードは別の枠へ移動でき、山札へ戻すと外れます。
+        縦長の画面では、構成図を縦向きに並べ替えて表示します。
+      </p>
+
+      <div id="board" class="board"></div>
+      <div id="tray" class="tray"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

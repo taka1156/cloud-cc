@@ -1,0 +1,100 @@
+[
+  {
+    "schemaVersion": 2,
+    "id": "sa-001",
+    "title": "CDNを前段に置いた冗長構成",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "CDN", "冗長化"],
+    "statement": "ECサイトの画像などはキャッシュして世界中に配信し、注文などの動的な処理は2つのAZのアプリケーションサーバーで行いたい。独自ドメインで受け付けたい。",
+    "requirements": [
+      "独自ドメインで受け付ける",
+      "エッジでキャッシュして配信する",
+      "動的な処理は2つのAZのサーバーに振り分ける"
+    ],
+    "template": "three-tier",
+    "deck": ["route53", "cloudfront", "alb", "ec2", "ec2", "s3", "rds"],
+    "answer": {
+      "slots": { "dns": "route53", "cdn": "cloudfront", "lb": "alb", "app1": "ec2", "app2": "ec2" }
+    },
+    "links": [["dns", "cdn"], ["cdn", "lb"], ["lb", "app1"], ["lb", "app2"]],
+    "explanation": "Route 53 から CloudFront を入口にし、キャッシュできないリクエストは ALB 経由で2つのAZの EC2 へ届けます。RDS はDBの枠に置けますが、この問題では要件に含まれません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "sa-002",
+    "title": "注文を取りこぼさない非同期処理",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "非同期", "疎結合"],
+    "statement": "セール時に注文が一気に集中し、処理が追いつかず失敗することがある。注文の受付と実際の処理を切り離し、失敗しても注文を失わないようにしたい。",
+    "requirements": [
+      "受け付けた注文をキューに溜める",
+      "キューから取り出してサーバーレスで処理する",
+      "結果をキーで読み書きできるDBに保存する"
+    ],
+    "template": "serverless",
+    "deck": ["sqs", "lambda", "dynamodb", "sns", "cloudwatch", "ec2"],
+    "answer": {
+      "slots": { "queue": "sqs", "fn": "lambda", "data": "dynamodb" }
+    },
+    "links": [["queue", "fn"], ["fn", "data"]],
+    "explanation": "SQS に注文を溜めることで受付と処理を疎結合にし、負荷のピークを吸収します。SNS も同じ枠に置けますが、通知を配る仕組みでメッセージを溜めておく用途には向きません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "sa-003",
+    "title": "コンテナで動くWebアプリの基盤",
+    "difficulty": 3,
+    "tags": ["ソリューションアーキテクト", "コンテナ", "冗長化"],
+    "statement": "社内のWebアプリをコンテナ化して運用したい。コンテナは2つのAZに分散させ、データはマネージドのリレーショナルDBに保存したい。",
+    "requirements": [
+      "HTTPのリクエストを振り分ける",
+      "コンテナを2つのAZで動かす",
+      "データはリレーショナルDBに保存する"
+    ],
+    "template": "three-tier",
+    "deck": ["alb", "ecs", "ecs", "rds", "waf", "kms"],
+    "answer": {
+      "slots": { "lb": "alb", "app1": "ecs", "app2": "ecs", "db1": "rds" }
+    },
+    "links": [["lb", "app1"], ["lb", "app2"], ["app1", "db1"]],
+    "explanation": "ALB が振り分け、ECS がコンテナを2つのAZで実行し、データは RDS に置きます。WAF も「振り分け」の枠に置けるカードですが、振り分け自体はできません。KMS は暗号化を強める改善策ですが、今回の必須要件ではありません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "sa-004",
+    "title": "非公開のサーバーから外部APIを呼ぶ",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "ネットワーク"],
+    "statement": "業務データを扱うサーバーはインターネットから直接アクセスされないよう、非公開のネットワークに置く。ただし外部の決済APIへの通信は必要。",
+    "requirements": [
+      "サーバーにはインターネットから直接届かない",
+      "サーバーから外部へは送信できる"
+    ],
+    "template": "three-tier",
+    "deck": ["ec2", "nat-gateway", "route53", "cloudfront"],
+    "answer": {
+      "slots": { "app1": "ec2", "nat": "nat-gateway" }
+    },
+    "links": [["app1", "nat"]],
+    "explanation": "プライベートサブネットの EC2 は、NAT Gateway を経由して外部へ送信します。外部から直接の受信は受け付けないため、要件を満たせます。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "sa-005",
+    "title": "保存データを暗号化して管理",
+    "difficulty": 2,
+    "tags": ["ソリューションアーキテクト", "暗号化", "コンプライアンス"],
+    "statement": "個人情報を含むデータをリレーショナルDBに保存する。監査で、保存データの暗号化と鍵の管理方法を説明できるようにしたい。",
+    "requirements": [
+      "データはリレーショナルDBに保存する",
+      "保存データを暗号化し、鍵を一元管理する"
+    ],
+    "template": "three-tier",
+    "deck": ["kms", "rds", "iam", "cloudwatch"],
+    "answer": {
+      "slots": { "security": "kms", "db1": "rds" }
+    },
+    "links": [["security", "db1"]],
+    "explanation": "KMS で暗号化鍵を一元管理し、RDS の保存データをその鍵で暗号化します。IAM も同じ枠に置けますが、権限の管理であって鍵の管理ではありません。"
+  }
+]

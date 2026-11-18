@@ -1,0 +1,96 @@
+[
+  {
+    "schemaVersion": 2,
+    "id": "cp-001",
+    "title": "アクセス増加に備えたWebサイト",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "スケーラビリティ"],
+    "statement": "社内の情報共有サイトを公開したところ、利用者が急増する時期がある。アクセスを2台のサーバーに振り分け、負荷に応じて台数を自動で増減させたい。",
+    "requirements": [
+      "アクセスを2台のサーバーに振り分ける",
+      "負荷に応じてサーバー台数を自動で増減させる"
+    ],
+    "template": "three-tier",
+    "deck": ["alb", "ec2", "ec2", "autoscaling", "s3", "rds"],
+    "answer": {
+      "slots": { "lb": "alb", "app1": "ec2", "app2": "ec2", "scale": "autoscaling" }
+    },
+    "links": [["lb", "app1"], ["lb", "app2"]],
+    "explanation": "ALB がリクエストを振り分け、Auto Scaling が EC2 の台数を負荷に応じて調整します。クラウドの「必要な分だけ使う（弾力性）」を表す構成です。RDS はDBの枠に置けますが、今回の要件には含まれません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "cp-002",
+    "title": "長期保存するファイルの置き場所",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "ストレージ"],
+    "statement": "写真データを数年分保管する必要がある。めったに読み出さないが、失われては困る。容量の上限を気にせず使いたい。",
+    "requirements": [
+      "容量の上限を気にせず保存できる",
+      "耐久性の高い保管先を使う"
+    ],
+    "template": "edge-web",
+    "deck": ["s3", "efs", "rds", "dynamodb", "ec2"],
+    "answer": {
+      "slots": { "storage": "s3" }
+    },
+    "links": [],
+    "explanation": "S3 はオブジェクトストレージで、容量をほぼ無制限に使え、高い耐久性を持ちます。EFS も保存先の枠に置けますが、複数のサーバーから同時に使うファイルシステムなので、今回の用途には向きません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "cp-003",
+    "title": "チームごとのアクセス権限",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "セキュリティ"],
+    "statement": "開発者と運用担当者で、使えるクラウドの操作範囲を分けたい。誰が何をできるかを明確にしたい。",
+    "requirements": [
+      "ユーザーごとに許可する操作を決められる"
+    ],
+    "template": "three-tier",
+    "deck": ["iam", "kms", "waf", "ec2"],
+    "answer": {
+      "slots": { "security": "iam" }
+    },
+    "links": [],
+    "explanation": "IAM でユーザーやグループごとに許可する操作を設定します。KMS も「権限・鍵」の枠に置けますが、暗号化鍵の管理が目的です。WAF はWebへの攻撃対策のカードなので、この枠には置けません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "cp-004",
+    "title": "不正アクセスから公開サイトを守る",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "セキュリティ"],
+    "statement": "CDN で配信している公開サイトが、悪意のある大量リクエストや特定の攻撃パターンにさらされている。配信の前段で不正なアクセスを止めたい。",
+    "requirements": [
+      "Webへの攻撃パターンを遮断する",
+      "正規のリクエストはCDNで配信する"
+    ],
+    "template": "edge-web",
+    "deck": ["waf", "cloudfront", "route53", "s3", "ec2"],
+    "answer": {
+      "slots": { "waf": "waf", "cdn": "cloudfront" }
+    },
+    "links": [["waf", "cdn"]],
+    "explanation": "WAF を CloudFront に組み合わせ、攻撃パターンを配信の前段で遮断します。防御は本体より前に置くのが基本です。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "cp-005",
+    "title": "データベースの運用を任せたい",
+    "difficulty": 1,
+    "tags": ["クラウドプラクティショナー", "データベース"],
+    "statement": "アプリケーションサーバーが使う MySQL のデータベースを、自分たちでサーバーを組んで運用するのは避けたい。パッチ適用やバックアップも任せたい。",
+    "requirements": [
+      "リレーショナルDB（MySQL）を使う",
+      "パッチ適用やバックアップを自動化する"
+    ],
+    "template": "three-tier",
+    "deck": ["ec2", "rds", "dynamodb", "s3"],
+    "answer": {
+      "slots": { "app1": "ec2", "db1": "rds" }
+    },
+    "links": [["app1", "db1"]],
+    "explanation": "RDS は MySQL などのリレーショナルDBをマネージドで提供し、パッチ適用やバックアップも任せられます。DynamoDB もDBの枠に置けますが、NoSQL なので MySQL の代わりにはなりません。"
+  }
+]

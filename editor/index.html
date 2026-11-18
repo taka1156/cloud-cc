@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cloud-cc 作問エディター</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header>
+    <h1>作問エディター <small><a href="../index.html">← ゲームへ戻る</a></small></h1>
+    <div class="toolbar">
+      <button id="btn-new" type="button">新規作成</button>
+      <label class="btn">JSON読込（複数可）<input id="btn-import" type="file" accept=".json,application/json" multiple hidden></label>
+      <button id="btn-bundled" type="button">リポジトリの問題を読込</button>
+      <button id="btn-export-one" type="button">この問題を書き出し</button>
+      <button id="btn-export-all" type="button">全件を書き出し</button>
+      <button id="btn-delete" type="button" class="danger">削除</button>
+    </div>
+    <p id="toast" class="status"></p>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <h2>問題一覧</h2>
+      <ul id="set-list"></ul>
+    </aside>
+
+    <main>
+      <fieldset id="form">
+        <div class="row">
+          <label>ID（ファイル名になる）<input id="f-id"></label>
+          <label>難易度
+            <select id="f-difficulty">
+              <option value="1">1（入門）</option>
+              <option value="2">2（標準）</option>
+              <option value="3">3（応用）</option>
+            </select>
+          </label>
+        </div>
+        <label>タイトル <input id="f-title"></label>
+        <label>タグ（カンマ区切り） <input id="f-tags"></label>
+        <label>問題文 <textarea id="f-statement" rows="4"></textarea></label>
+        <label>要件（1行に1つ） <textarea id="f-requirements" rows="4"></textarea></label>
+        <label>解説 <textarea id="f-explanation" rows="5"></textarea></label>
+
+        <h3>構成図テンプレート</h3>
+        <select id="f-template"></select>
+        <p id="template-desc" class="meta"></p>
+
+        <h3>山札（プレイヤーに渡すカードと枚数）</h3>
+        <p class="meta">正解のカードに加えて、紛らわしいカードを混ぜると問題らしくなります。</p>
+        <div id="deck-grid" class="qty-grid"></div>
+
+        <h3>正解（枠ごとに置くカード）</h3>
+        <p class="meta">プルダウンには、山札にあり、かつその枠に置けるカードだけが出ます。ゲームの盤面には、ここで正解を決めた枠だけが表示されます。</p>
+        <div id="answer-grid" class="slot-rows"></div>
+
+        <h3>構成図に描く線（正解で使う枠どうし・向きなし）</h3>
+        <div class="row">
+          <select id="link-from"></select>
+          <span>――</span>
+          <select id="link-to"></select>
+          <button id="link-add" type="button">追加</button>
+        </div>
+        <ul id="link-list"></ul>
+      </fieldset>
+
+      <section>
+        <h3>検証結果</h3>
+        <ul id="errors"></ul>
+      </section>
+
+      <section>
+        <h3>JSONプレビュー（data/problems/&lt;id&gt;.json として保存）</h3>
+        <textarea id="preview" rows="18" readonly></textarea>
+      </section>
+
+      <section>
+        <h3>JSONを貼り付けて反映</h3>
+        <p class="meta">AIが作ったJSONを貼ると、選択中の問題を置き換えます（未選択なら新規追加）。</p>
+        <textarea id="paste" rows="6" placeholder="{ &quot;schemaVersion&quot;: 2, &quot;id&quot;: &quot;...&quot;, ... }"></textarea>
+        <p><button id="btn-paste" type="button">反映する</button></p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+[
+  {
+    "schemaVersion": 2,
+    "id": "devops-001",
+    "title": "コードの変更を自動でビルド・デプロイ",
+    "difficulty": 2,
+    "tags": ["DevOps", "CI/CD"],
+    "statement": "コードがリポジトリに反映されたら、ビルドとテストを自動で行い、コンテナ環境にデプロイしたい。手作業でのデプロイはやめたい。",
+    "requirements": [
+      "工程全体を自動で進める",
+      "ビルドとテストを自動で実行する",
+      "コンテナ環境へデプロイする"
+    ],
+    "template": "pipeline",
+    "deck": ["codepipeline", "codebuild", "ecs", "s3", "cloudformation", "rds"],
+    "answer": {
+      "slots": { "pipe": "codepipeline", "build": "codebuild", "target": "ecs" }
+    },
+    "links": [["pipe", "build"], ["build", "target"]],
+    "explanation": "CodePipeline が工程全体を管理し、CodeBuild がビルドとテストを実行して、ECS にデプロイします。CloudFormation もパイプラインの枠に置けますが、インフラ構築のためのカードです。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "devops-002",
+    "title": "同じ環境を何度でも作り直す",
+    "difficulty": 1,
+    "tags": ["DevOps", "IaC"],
+    "statement": "開発環境と本番環境の構成が少しずつずれ、トラブルの原因になっている。構成をコードとして管理し、同じサーバー環境を繰り返し作れるようにしたい。",
+    "requirements": [
+      "インフラ構成をテンプレートとして管理する",
+      "テンプレートからサーバーを作成する"
+    ],
+    "template": "pipeline",
+    "deck": ["cloudformation", "ec2", "s3", "codebuild", "rds"],
+    "answer": {
+      "slots": { "iac": "cloudformation", "target": "ec2" }
+    },
+    "links": [["iac", "target"]],
+    "explanation": "CloudFormation はテンプレートに書いた構成を読み込み、EC2 などを自動で作成します。CodeBuild も同じ種類の枠に置けますが、ビルドを行うカードで、インフラの定義はできません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "devops-003",
+    "title": "サーバーの異常を検知する",
+    "difficulty": 2,
+    "tags": ["DevOps", "監視"],
+    "statement": "サーバーのCPU使用率が急上昇しても気づくのが遅れている。デプロイしたサーバーのメトリクスを監視し、しきい値を超えたらアラームを出したい。",
+    "requirements": [
+      "サーバーのメトリクスを収集する",
+      "しきい値を超えたらアラームを出す"
+    ],
+    "template": "pipeline",
+    "deck": ["ec2", "cloudwatch", "s3", "codepipeline", "sns"],
+    "answer": {
+      "slots": { "target": "ec2", "monitor": "cloudwatch" }
+    },
+    "links": [["target", "monitor"]],
+    "explanation": "CloudWatch が EC2 のメトリクスを収集し、アラームでしきい値の超過を知らせます。SNS は通知の送信に使いますが、この盤面には置ける枠がありません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "devops-004",
+    "title": "アラームを起点に自動で復旧する",
+    "difficulty": 3,
+    "tags": ["DevOps", "自動化", "イベント駆動"],
+    "statement": "障害が起きたら、人が対応する前に自動で復旧処理を行いたい。監視のアラームを起点にして、サーバーレスで復旧処理を実行したい。",
+    "requirements": [
+      "障害を監視してアラームを出す",
+      "アラームを受けて復旧処理をサーバーレスで実行する"
+    ],
+    "template": "serverless",
+    "deck": ["lambda", "cloudwatch", "sqs", "rds", "ec2"],
+    "answer": {
+      "slots": { "ops": "cloudwatch", "fn": "lambda" }
+    },
+    "links": [["ops", "fn"]],
+    "explanation": "CloudWatch のアラームを起点に Lambda を実行し、再起動などの復旧処理を行います。EC2 も「処理」の枠に置けますが、サーバーレスではありません。"
+  },
+  {
+    "schemaVersion": 2,
+    "id": "devops-005",
+    "title": "停止させずに新バージョンへ切り替える",
+    "difficulty": 3,
+    "tags": ["DevOps", "デプロイ", "無停止"],
+    "statement": "本番のWebアプリを更新するたびにサービスが止まってしまう。コンテナを2つのAZで動かし、ロードバランサーの向き先を切り替えることで無停止で更新したい。",
+    "requirements": [
+      "独自ドメインで受け付ける",
+      "ロードバランサーで向き先を切り替える",
+      "コンテナを2つのAZで動かす"
+    ],
+    "template": "three-tier",
+    "deck": ["route53", "alb", "ecs", "ecs", "rds", "codepipeline"],
+    "answer": {
+      "slots": { "dns": "route53", "lb": "alb", "app1": "ecs", "app2": "ecs" }
+    },
+    "links": [["dns", "lb"], ["lb", "app1"], ["lb", "app2"]],
+    "explanation": "ALB の向き先を新しいバージョンのECSタスクに切り替えることで、無停止で更新できます。CodePipeline はデプロイの自動化に使いますが、この盤面には置ける枠がありません。"
+  }
+]
